@@ -1,0 +1,26 @@
+# This GitLab CI configuration is used for the weekly exercies of
+# the course Ohjelmointi 3/Programming 3
+
+# For more information refer to: https://course-gitlab.tut.fi/help/ci/yaml/README.md
+
+# Imagena on käytössä itse rakennettu Alpine Linux, 
+# johon asennettu Qt 5.9.1 ja tarvittavat käännöstyökalut
+
+# We use an image based on Alpine Linux that contains
+# Qt 5.9.6 and the necessary  
+
+image: pervasivetut/alpine_qt_5.9.6:latest
+
+# We currently only need the build stage
+stages:
+  - build
+
+build_WE2:
+  stage: build
+  tags:
+    - qt
+  script: 
+    - cd WE2/DesignByContract
+    - qmake
+    - make
+    - make clean

@@ -16,7 +16,7 @@ public:
     /**
      * @brief Constructor
      */
-    BadDate();
+    //BadDate();
 };
 
 #endif // BADDATE_HH

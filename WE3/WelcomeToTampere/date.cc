@@ -1,5 +1,6 @@
 #include "date.hh"
 #include <QtDebug>
+#include "baddate.hh"
 
 Date::Date(unsigned int d, unsigned int m, unsigned int y)
     : day_(d), month_(m), year_(y)

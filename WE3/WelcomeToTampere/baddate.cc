@@ -1,6 +1,7 @@
 #include "baddate.hh"
+#include<iostream>
 
-BadDate::BadDate()
-{
-
-}
+using namespace std;
+//BadDate::BadDate()
+//{
+//}

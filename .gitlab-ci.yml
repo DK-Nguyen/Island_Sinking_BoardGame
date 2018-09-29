@@ -3,6 +3,9 @@
 
 # For more information refer to: https://course-gitlab.tut.fi/help/ci/yaml/README.md
 
+# Imagena on käytössä itse rakennettu Alpine Linux, 
+# johon asennettu Qt 5.9.1 ja tarvittavat käännöstyökalut
+
 # We use an image based on Alpine Linux that contains
 # Qt 5.9.6 and the necessary  
 
@@ -11,102 +14,13 @@ image: pervasivetut/alpine_qt_5.9.6:latest
 # We currently only need the build stage
 stages:
   - build
-  - test
 
-# Build job to see that the WE3 project is created and the project is ready for submission.
-build_WE3:
+build_WE2:
   stage: build
   tags:
     - qt
   script: 
-    - cd WE3
+    - cd WE2/DesignByContract
     - qmake
     - make
     - make clean
-  allow_failure: true
-
-# Build job for Morottaja's unit test
-Morottaja:
-  # The runner must be able to run and compile Qt projects
-  tags:
-    - qt
-  # Build jobs naturally go to the build stage
-  # We could also have multi-stage builds if needed
-  stage: build
-  # The command line commands we want the CI environment to execute
-  # When the script section starts, the working directory is the repository's root
-  script: 
-    # Go to the correct directory
-    - cd WE3/UnitTests/Morottaja
-    # Run qmake to produce the makefile
-    - qmake
-    # Compile the project using the generated Makefile
-    - make
-    # Clean up the build
-    - make clean
-  # In a distributed CI system we need a way to pass the generated binary between jobs.
-  # GitLab CI provides artifacts to achieve this.
-  artifacts:
-    # Paths to the artifacts we want to pass
-    paths:
-      - WE3/UnitTests/Morottaja/morottajatest
-    # How long we store the artifacts in GitLab
-    expire_in: 2d
-
-# Test job for Morottaja's unit test
-MorottajaTest:
-  tags:
-    - qt
-  stage: test
-  script:
-    # Go to the correct directory
-    - cd WE3/UnitTests/Morottaja
-    # Run the test binary
-    - ./morottajatest
-  # On what jobs this dependes on, which artifacts we download for this job
-  dependencies:
-    - Morottaja
-
-
-# Build job for Morottaja's unit test
-Date:
-  # The runner must be able to run and compile Qt projects
-  tags:
-    - qt
-  # Build jobs naturally go to the build stage
-  # We could also have multi-stage builds if needed
-  stage: build
-  # The command line commands we want the CI environment to execute
-  # When the script section starts, the working directory is the repository's root
-  script: 
-    # Go to the correct directory
-    - cd WE3/UnitTests/Date
-    # Run qmake to produce the makefile
-    - qmake
-    # Compile the project using the generated Makefile
-    - make
-    # Clean up the build
-    - make clean
-  # In a distributed CI system we need a way to pass the generated binary between jobs.
-  # GitLab CI provides artifacts to achieve this.
-  artifacts:
-    # Paths to the artifacts we want to pass
-    paths:
-      - WE3/UnitTests/Date/datetest
-    # How long we store the artifacts in GitLab
-    expire_in: 2d
-
-# Test job for Morottaja's unit test
-DateTest:
-  tags:
-    - qt
-  stage: test
-  script:
-    # Go to the correct directory
-    - cd WE3/UnitTests/Date
-    # Run the test binary
-    - ./datetest
-  # On what jobs this dependes on, which artifacts we download for this job
-  dependencies:
-    - Date
-

@@ -32,7 +32,8 @@ SOURCES += \
     movingobject.cc \
     movingobjectgraphics.cc \
     fastball.cc \
-    objectcontroller.cc
+    objectcontroller.cc \
+    dialog.cpp
 
 
 HEADERS += \
@@ -40,8 +41,10 @@ HEADERS += \
     movingobject.hh \
     movingobjectgraphics.hh \
     fastball.hh \
-    objectcontroller.hh
+    objectcontroller.hh \
+    dialog.h
     constants.hh
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    dialog.ui

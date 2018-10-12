@@ -8,6 +8,7 @@
 #include <QLayout>
 #include <QWidget>
 #include <QTimer>
+#include <dialog.h>
 
 const QString MainWindow::S_START = QString("Start");
 const QString MainWindow::S_STOP = QString("Stop");
@@ -35,6 +36,9 @@ MainWindow::MainWindow(ObjectController* controller, QWidget *parent)
             this, &MainWindow::moveObjects);
 
     timer_->setInterval(CLOCK_MS);
+
+
+
 }
 
 MainWindow::~MainWindow()

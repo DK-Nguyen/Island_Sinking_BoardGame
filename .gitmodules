@@ -1,3 +1,6 @@
 [submodule "GameLogic"]
 	path = GameLogic
 	url = ../GameLogic
+[submodule "project_upstream"]
+	path = project_upstream
+	url = https://course-gitlab.tut.fi/ohj3-2018-2019/project_upstream.git

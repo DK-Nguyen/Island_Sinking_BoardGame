@@ -1,7 +1,15 @@
 #include<gameboard.hh>
 #include<pawn.hh>
 #include<hex.hh>
+#include<iostream>
 
+
+GameBoard::~GameBoard()
+{
+    GameBoard::hex_list.clear();
+    GameBoard::pawn_list.clear();
+    return;
+}
 int GameBoard::checkTileOccupation(Common::CubeCoordinate tileCoord) const
 {
     auto hex_ptr = GameBoard::getHex(tileCoord);
@@ -122,4 +130,66 @@ std::pair<int,int> GameBoard::CubeToRegularCoordinate(Common::CubeCoordinate coo
     x = coord.x + coord.y -5;
     y = coord.y - coord.x -7;
     return std::make_pair(x,y);
+}
+
+void GameBoard::print_hex_list() const
+{
+    for (auto it=GameBoard::hex_list.begin(); it!=GameBoard::hex_list.end(); it++)
+    {
+        auto coord = it->second->getCoordinates();
+        auto type = it->second->getPieceType();
+        std::cerr<< "coordinate: " << coordToString(coord) << "\n";
+        std::cerr<< "type: " << type << "\n";
+    }
+}
+
+void GameBoard::print_hex_stat() const
+{
+    int min_x = 10000;
+    int max_x = -10000;
+    int min_y = 10000;
+    int max_y = -10000;
+    int min_z = 10000;
+    int max_z = -10000;
+
+    int count = 0;
+    for (auto it=GameBoard::hex_list.begin(); it!=GameBoard::hex_list.end(); it++)
+    {
+        auto coord = it->second->getCoordinates();
+        count += 1;
+        if (coord.x < min_x)
+        {
+            min_x = coord.x;
+        }
+        if (coord.x > max_x)
+        {
+            max_x = coord.x;
+        }
+
+        if (coord.y < min_y)
+        {
+            min_y = coord.y;
+        }
+        if (coord.y > max_y)
+        {
+            max_y = coord.y;
+        }
+
+
+        if (coord.z < min_z)
+        {
+            min_z = coord.z;
+        }
+        if (coord.z > max_z)
+        {
+            max_z = coord.z;
+        }
+
+
+    }
+
+    std::cerr<<"number of tiles: " << std::to_string(count);
+    std::cerr<<"min x: " << std::to_string(min_x) << ", max x: " << std::to_string(max_x) << "\n";
+    std::cerr<<"min y: " << std::to_string(min_y) << ", max y: " << std::to_string(max_y) << "\n";
+    std::cerr<<"min z: " << std::to_string(min_z) << ", max z: " << std::to_string(max_z) << "\n";
 }

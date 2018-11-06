@@ -9,7 +9,7 @@
 class GameBoard : public Common::IGameBoard
 {
 public:
-    GameBoard();
+    GameBoard() = default;
     ~GameBoard();
     virtual int checkTileOccupation(Common::CubeCoordinate tileCoord) const;
 
@@ -86,6 +86,9 @@ public:
     std::string coordToString(Common::CubeCoordinate coord) const;
 
     std::shared_ptr<Common::Hex> findActor(int actorId) const;
+
+    void print_hex_list() const;
+    void print_hex_stat() const;
 
 private:
     std::unordered_map<std::string, std::shared_ptr<Common::Hex>> hex_list;

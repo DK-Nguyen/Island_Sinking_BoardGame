@@ -6,6 +6,7 @@
 #include <mainwindow.h>
 #include <memory>
 #include <QApplication>
+#include "configdialog.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,8 +33,15 @@ int main(int argc, char *argv[])
     game_board_ptr->print_hex_list();
     game_board_ptr->print_hex_stat();
 
-    MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 10, nullptr);
-    main_window->show();
-    main_window->start();
+    configDialog* dialog = new configDialog;
+    if (dialog->exec() == QDialog::Accepted) {
+        MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 5, nullptr);
+        main_window->show();
+        main_window->start();
+        std::cerr << dialog->getNumPlayers() << "\n";
+        std::cerr << dialog->getNumPawn() << "\n";
+    } else {
+        return a.exec();
+    }
     return a.exec();
 }

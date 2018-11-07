@@ -11,8 +11,16 @@ public:
 
     GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, QGraphicsItem* parent=nullptr);
     ~GraphicHex();
+
+    // flip
+    void flip();
+
+    // set color
+    void set_color(std::string type);
+
     std::shared_ptr<Common::Hex> hex_ptr;
     QVector<QPointF> vertex;
+
 };
 
 

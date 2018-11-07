@@ -44,6 +44,7 @@ public:
     // test plot only 1 hex
     void plot_center_hex();
 
+
     // container to hold items
     QGraphicsScene* scene;
 

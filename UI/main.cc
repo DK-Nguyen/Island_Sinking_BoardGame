@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     game_board_ptr->print_hex_list();
     game_board_ptr->print_hex_stat();
 
-    MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 5, nullptr);
+    MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 10, nullptr);
     main_window->show();
     main_window->start();
     return a.exec();

@@ -24,13 +24,13 @@ MainWindow::MainWindow(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
 
 
     // set up the screen
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setFixedSize(1024,768);
+    //setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setFixedSize(160*scale,140*scale);
 
     // set up the scene
     scene = new QGraphicsScene();
-    scene->setSceneRect(0,0,1024,768);
+    scene->setSceneRect(0,0,160*scale,180*scale);
     setScene(scene);
 }
 
@@ -87,8 +87,8 @@ void MainWindow::populate()
 std::pair<long,long> MainWindow::cube_to_plane(Common::CubeCoordinate coord)
 {
     long x, y;
-    x = 3*coord.x - 3*coord.y + 63;
-    y = 5*coord.x + 5*coord.y + 73.5;
+    x = 3*coord.x - 3*coord.y + 67;
+    y = 5*coord.x + 5*coord.y + 76.5;
     return std::make_pair(x,y);
 }
 

@@ -3,12 +3,14 @@
 #include "player.hh"
 #include "initialize.hh"
 #include<iostream>
-
+#include <mainwindow.h>
 #include <memory>
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
+    QApplication a(argc, argv);
+
     std::vector<std::shared_ptr<Common::IPlayer>> players;
     auto player1_ptr = std::make_shared<Player>(1);
     auto player2_ptr = std::make_shared<Player>(2);
@@ -30,6 +32,8 @@ int main(int argc, char *argv[])
     game_board_ptr->print_hex_list();
     game_board_ptr->print_hex_stat();
 
-    // QApplication a(argc, argv);
-    // return a.exec();
+    MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 5, nullptr);
+    main_window->show();
+    main_window->start();
+    return a.exec();
 }

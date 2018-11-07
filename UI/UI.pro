@@ -16,12 +16,20 @@ CONFIG += c++14
 SOURCES += main.cc \
     gameboard.cpp \
     gamestate.cpp \
-    player.cpp
+    player.cpp \
+    graphichex.cpp \
+    graphicpawn.cpp \
+    graphicactor.cpp \
+    mainwindow.cpp
 
 HEADERS  += \
     gameboard.hh \
     player.hh \
-    gamestate.hh
+    gamestate.hh \
+    graphichex.h \
+    graphicpawn.h \
+    mainwindow.h \
+    graphicactor.h
 
 INCLUDEPATH += $$PWD/../GameLogic/Engine
 DEPENDPATH += $$PWD/../GameLogic/Engine

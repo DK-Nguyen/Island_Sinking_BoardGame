@@ -90,7 +90,6 @@ public:
     void print_hex_list() const;
     void print_hex_stat() const;
 
-private:
     std::unordered_map<std::string, std::shared_ptr<Common::Hex>> hex_list;
     std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>> pawn_list;
 };

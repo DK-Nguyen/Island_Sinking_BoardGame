@@ -20,8 +20,12 @@ SOURCES += main.cc \
     graphichex.cpp \
     graphicpawn.cpp \
     graphicactor.cpp \
+    hexboard.cpp \
     mainwindow.cpp \
-    configdialog.cpp
+    controlboard.cpp \
+    button.cpp \
+    wheel.cpp \
+    configurationwindow.cpp
 
 HEADERS  += \
     gameboard.hh \
@@ -29,9 +33,13 @@ HEADERS  += \
     gamestate.hh \
     graphichex.h \
     graphicpawn.h \
-    mainwindow.h \
     graphicactor.h \
-    configdialog.h
+    hexboard.h \
+    controlboard.h \
+    mainwindow.h \
+    button.h \
+    wheel.h \
+    configurationwindow.h
 
 INCLUDEPATH += $$PWD/../GameLogic/Engine
 DEPENDPATH += $$PWD/../GameLogic/Engine
@@ -67,6 +75,3 @@ unix:!macx {
 
 QMAKE_EXTRA_TARGETS += copyfiles
 POST_TARGETDEPS += copyfiles
-
-FORMS += \
-    configdialog.ui

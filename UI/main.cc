@@ -3,10 +3,10 @@
 #include "player.hh"
 #include "initialize.hh"
 #include<iostream>
-#include <mainwindow.h>
+#include <hexboard.h>
 #include <memory>
 #include <QApplication>
-#include "configdialog.h"
+#include <controlboard.h>
 
 int main(int argc, char *argv[])
 {
@@ -33,15 +33,21 @@ int main(int argc, char *argv[])
     game_board_ptr->print_hex_list();
     game_board_ptr->print_hex_stat();
 
-    configDialog* dialog = new configDialog;
-    if (dialog->exec() == QDialog::Accepted) {
-        MainWindow* main_window = new MainWindow(game_runner_ptr, game_board_ptr, game_state_ptr, players, 5, nullptr);
-        main_window->show();
-        main_window->start();
-        std::cerr << dialog->getNumPlayers() << "\n";
-        std::cerr << dialog->getNumPawn() << "\n";
-    } else {
-        return a.exec();
+    QHash<QString, int> *points = new QHash<QString, int>();
+    QHash<QString, int> *top10 = new QHash<QString, int>();
+
+    auto points_sptr = QSharedPointer<QHash<QString, int>>(points);
+    auto top10_sptr = QSharedPointer<QHash<QString, int>>(top10);
+
+    for (int i=1; i<11; i++)
+    {
+        QString key = QString("Player ") + QString::number(i);
+        (*points)[key] = i*10;
+        (*top10)[key] = i*10;
     }
+
+    ControlBoard* main_window = new ControlBoard(points_sptr, top10_sptr, nullptr);
+    main_window->show();
+
     return a.exec();
 }

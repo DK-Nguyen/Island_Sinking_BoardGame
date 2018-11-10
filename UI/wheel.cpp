@@ -1,5 +1,6 @@
 #include <wheel.h>
-#include<QTimer>
+#include <QTimer>
+#include <iostream>
 
 Wheel::Wheel(QString filename, int no_rotation, int interval, bool has_clock_direction, QObject *parent)
     :QObject (parent)
@@ -41,30 +42,31 @@ void Wheel::spin(int target_degree)
         }
     }
 
-    spin_animation(0);
+
     setRotation(target_degree);
+    spin_animation(target_degree, target_degree + 360*5);
 
     return ;
 }
 
 
-void Wheel::spin_animation(int degree)
+void Wheel::spin_animation(int degree, int target_degree)
 {
     setRotation(degree);
     if (has_clock_direction)
     {
-        if (degree < 360*no_rotation)
+        if (degree < target_degree)
         {
-            int target = std::min(360*no_rotation, degree+30);
-            QTimer::singleShot(interval, [=]{spin_animation(target);});
+            int target = std::min(target_degree, degree+30);
+            QTimer::singleShot(interval, [=]{spin_animation(target, target_degree);});
         }
     }
     else
     {
-        if (degree > -360*no_rotation)
+        if (degree > -target_degree)
         {
-            int target = std::max(-360*no_rotation, degree-30);
-            QTimer::singleShot(interval, [=]{spin_animation(target);});
+            int target = std::max(-target_degree, degree-30);
+            QTimer::singleShot(interval, [=]{spin_animation(target, target_degree);});
         }
     }
 }

@@ -5,7 +5,7 @@
 #include <QBrush>
 #include <QColor>
 
-GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, QGraphicsItem* parent)
+GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, QGraphicsItem* parent): QGraphicsPolygonItem (parent)
 {
     this->vertex = vertex;
     this->hex_ptr = hex_ptr;

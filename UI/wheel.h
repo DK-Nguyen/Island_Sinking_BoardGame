@@ -29,7 +29,7 @@ private:
     bool has_clock_direction;
 
     // spin animation
-    void spin_animation(int degree);
+    void spin_animation(int degree, int target_degree);
 
 };
 

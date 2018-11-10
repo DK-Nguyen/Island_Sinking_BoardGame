@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         (*top10)[key] = i*10;
     }
 
-    ControlBoard* main_window = new ControlBoard(points_sptr, top10_sptr, nullptr);
+    ControlBoard* main_window = new ControlBoard(game_runner_ptr, points_sptr, top10_sptr, nullptr);
     main_window->show();
 
     return a.exec();

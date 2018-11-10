@@ -1,25 +1,47 @@
-﻿#include <controlboard.h>
+#include <controlboard.h>
 #include <QGraphicsProxyWidget>
 #include <iostream>
 #include <QTimer>
 #include <QObject>
 #include <QtWidgets>
+#include <igamerunner.hh>
+#include <iostream>
+#include <closingwindow.h>
+
 ControlBoard::~ControlBoard()
 {
+    // TODO: implement destructor
     return;
 }
 
-ControlBoard::ControlBoard(QSharedPointer<QHash<QString, int>> current_points,
+void ControlBoard::closeEvent(QCloseEvent *event)
+{
+    if (not allow_quit)
+    {
+        event->ignore();
+        CloseWindow* close_window = new CloseWindow();
+        connect(close_window->save_button, SIGNAL(clicked()), this, SLOT(save_button_clicked()));
+        connect(close_window->quit_button, SIGNAL(clicked()), this, SLOT(quit_game()));
+        close_window->show();
+    }
+    else{
+        event->accept();
+    }
+}
+
+ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
+                           QSharedPointer<QHash<QString, int>> current_points,
                            QSharedPointer<QHash<QString, int>> top10,
                            QWidget* parent)
     : QGraphicsView (parent)
-
 
 {
 
     this->config = config;
     this->points = current_points;
     this->top10 = top10;
+    this->game_engine = game_engine;
+    this->allow_quit = false;
 
     setFixedSize(350, 720);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -32,10 +54,11 @@ ControlBoard::ControlBoard(QSharedPointer<QHash<QString, int>> current_points,
 
     // handle buttons
 
-    start_button = new QPushButton(tr("Start"));
-    start_button->setFixedSize(70, 35);
-    QGraphicsProxyWidget* start_button_proxy = scene->addWidget(start_button);
-    start_button_proxy->setPos(35, 15);
+    play_button = new QPushButton(tr("Play"));
+    play_button->setFixedSize(70, 35);
+    QGraphicsProxyWidget* play_button_proxy = scene->addWidget(play_button);
+    play_button_proxy->setPos(35, 15);
+    connect(play_button, SIGNAL(clicked()), this, SLOT(deactivate_play_button()));
 
 
     save_button = new QPushButton(tr("Save"));
@@ -43,13 +66,16 @@ ControlBoard::ControlBoard(QSharedPointer<QHash<QString, int>> current_points,
     save_button->setFixedSize(70, 35);
     auto save_button_proxy = scene->addWidget(save_button);
     save_button_proxy->setPos(140, 15);
+    connect(save_button, SIGNAL(clicked()), this, SLOT(save_button_clicked()));
+
 
     quit_button = new QPushButton(tr("Quit"));
     quit_button->setFixedSize(70, 35);
     auto quit_button_proxy = scene->addWidget(quit_button);
     quit_button_proxy->setPos(245, 15);
+    connect(quit_button, SIGNAL(clicked()), this, SLOT(quit_button_clicked()));
 
-    // handle game state
+    // handle game state display
     current_turn = new QGraphicsTextItem(tr("Current Turn: Player 1"));
     current_turn->adjustSize();
     current_turn->setPos(95, 70);
@@ -91,25 +117,73 @@ ControlBoard::ControlBoard(QSharedPointer<QHash<QString, int>> current_points,
 }
 
 
-void ControlBoard::on_closing()
+
+void ControlBoard::save_button_clicked()
+// TODO: perform saving function
 {
+    // perform saving function
+
+
+    emit control_board_close();
+    quit_game();
     return;
 }
 
-void ControlBoard::save_game()
+void ControlBoard::wheel_clicked()
 {
-    return;
+    auto wheel_output = game_engine->spinWheel();
+    int inner_degree, outter_degree;
+
+    if (wheel_output.first.compare("dolphin")==0)
+    {
+        inner_degree = 0;
+    }
+    else if (wheel_output.first.compare("kraken")==0) {
+        inner_degree = -90;
+    }
+    else if (wheel_output.first.compare("seamunster")==0) {
+        inner_degree = -180;
+    }
+    else{
+        inner_degree = -270;
+    }
+
+    if (wheel_output.second.compare("1")==0)
+    {
+        outter_degree = 270;
+    }
+    else if (wheel_output.second.compare("2")==0) {
+        outter_degree = 0;
+    }
+    else if (wheel_output.second.compare("3")==0) {
+        outter_degree = 90;
+    }
+    else{
+        outter_degree = 180;
+    }
+
+    emit animate_inner_wheel(inner_degree);
+    emit animate_outter_wheel(outter_degree);
 }
 
-void ControlBoard::spin_wheel()
+void ControlBoard::quit_game()
 {
-    emit animate_inner_wheel(0);
-    emit animate_outter_wheel(0);
+    // emit control_board_close signal
+    allow_quit = true;
+    emit control_board_close();
+    close();
+}
+
+void ControlBoard::quit_button_clicked()
+{
+    QCloseEvent * event = new QCloseEvent();
+    closeEvent(event);
 }
 
 
-void ControlBoard::deactivate_start_button()
+void ControlBoard::deactivate_play_button()
 {
+    play_button->setEnabled(false);
     return;
 }
 
@@ -179,7 +253,7 @@ void ControlBoard::initialize_inner_wheel()
     QPointF target_pos = QPointF(40, 500) - inner_wheel->scenePos();
     inner_wheel->setPos(target_pos);
 
-    connect(inner_wheel, SIGNAL(clicked()), this, SLOT(spin_wheel()));
+    connect(inner_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
     connect(this, SIGNAL(animate_inner_wheel(int)), inner_wheel, SLOT(spin(int)));
 }
 
@@ -212,7 +286,7 @@ void ControlBoard::initialize_outter_wheel()
     marker->setBrush(brush);
     scene->addItem(marker);
 
-    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(spin_wheel()));
+    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
     connect(this, SIGNAL(animate_outter_wheel(int)), outter_wheel, SLOT(spin(int)));
 }
 

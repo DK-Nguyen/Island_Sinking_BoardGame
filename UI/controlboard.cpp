@@ -1,6 +1,9 @@
-#include <controlboard.h>
+﻿#include <controlboard.h>
 #include <QGraphicsProxyWidget>
-
+#include <iostream>
+#include <QTimer>
+#include <QObject>
+#include <QtWidgets>
 ControlBoard::~ControlBoard()
 {
     return;
@@ -81,6 +84,10 @@ ControlBoard::ControlBoard(QSharedPointer<QHash<QString, int>> current_points,
     top10_title->setScale(1.25);
     show_top10();
 
+    // handle wheel
+    initialize_inner_wheel();
+    initialize_outter_wheel();
+
 }
 
 
@@ -93,10 +100,14 @@ void ControlBoard::save_game()
 {
     return;
 }
+
 void ControlBoard::spin_wheel()
 {
-    return;
+    emit animate_inner_wheel(0);
+    emit animate_outter_wheel(0);
 }
+
+
 void ControlBoard::deactivate_start_button()
 {
     return;
@@ -157,4 +168,55 @@ void ControlBoard::show_top10()
         y += 25;
     }
 }
+
+void ControlBoard::initialize_inner_wheel()
+{
+    // load wheel symbol
+    inner_wheel = new Wheel(":/Images/inner_wheel.png", 5, 30, false, this);
+    inner_wheel->setScale(0.35);
+    scene->addItem(inner_wheel);
+
+    QPointF target_pos = QPointF(40, 500) - inner_wheel->scenePos();
+    inner_wheel->setPos(target_pos);
+
+    connect(inner_wheel, SIGNAL(clicked()), this, SLOT(spin_wheel()));
+    connect(this, SIGNAL(animate_inner_wheel(int)), inner_wheel, SLOT(spin(int)));
+}
+
+void ControlBoard::initialize_outter_wheel()
+{
+    // load wheel symbol
+    outter_wheel = new Wheel(":/Images/outter_wheel.png", 5, 30, true, this);
+    outter_wheel->setScale(0.35);
+    scene->addItem(outter_wheel);
+
+    QPointF target_pos = QPointF(40, 500) - outter_wheel->scenePos();
+    outter_wheel->setPos(target_pos);
+
+    // marker
+    QVector<QPointF> vertex;
+    QPointF v1 = outter_wheel->pos() + QPointF(410, 300);
+
+    std::cerr << v1.rx() << ", " << v1.ry() << "\n";
+
+    vertex.push_back(v1);
+    vertex.push_back(v1 + QPointF(20, -10));
+    vertex.push_back(v1 + QPointF(20, 10));
+
+    QPolygonF triagle(vertex);
+    marker = new QGraphicsPolygonItem(triagle);
+
+    QBrush brush;
+    brush.setStyle(Qt::SolidPattern);
+    brush.setColor(Qt::red);
+    marker->setBrush(brush);
+    scene->addItem(marker);
+
+    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(spin_wheel()));
+    connect(this, SIGNAL(animate_outter_wheel(int)), outter_wheel, SLOT(spin(int)));
+}
+
+
+
+
 

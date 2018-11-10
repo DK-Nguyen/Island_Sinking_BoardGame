@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>Images/inner_wheel.png</file>
+    <file>Images/outter_wheel.png</file>
+</qresource>
+</RCC>

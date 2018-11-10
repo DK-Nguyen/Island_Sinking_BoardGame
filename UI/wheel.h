@@ -1,20 +1,35 @@
 #ifndef WHEEL_H
 #define WHEEL_H
 
-#include <QGraphicsPolygonItem>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>
 
-class Wheel: public QGraphicsPixmapItem
+class Wheel: public QObject, public QGraphicsPixmapItem
 {
+    Q_OBJECT
+public:
     // constructor
-    Wheel(int x_pos, int y_pos, int radius, QGraphicsItem* parent=nullptr);
+    Wheel(QString filename, int no_rotation, int interval, bool has_clock_direction, QObject* parent=nullptr);
 
-    // spin animation
-    void spin_animation();
+    // destructor
+    ~Wheel();
 
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
+
+signals:
+    void clicked();
+
+public slots:
+    void spin(int target_output);
 
 private:
-    int x_pos, y_pos, radius;
+    QPixmap image;
+    int no_rotation, interval;
+    bool has_clock_direction;
+
+    // spin animation
+    void spin_animation(int degree);
 
 };
 

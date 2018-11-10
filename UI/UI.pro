@@ -12,6 +12,10 @@ TARGET = IslandGame
 TEMPLATE = app
 CONFIG += c++14
 
+RESOURCES = assets.qrc
+
+SUBDIRS += Images
+
 
 SOURCES += main.cc \
     gameboard.cpp \
@@ -24,8 +28,8 @@ SOURCES += main.cc \
     mainwindow.cpp \
     controlboard.cpp \
     button.cpp \
-    wheel.cpp \
-    configurationwindow.cpp
+    configurationwindow.cpp \
+    wheel.cpp
 
 HEADERS  += \
     gameboard.hh \
@@ -38,8 +42,8 @@ HEADERS  += \
     controlboard.h \
     mainwindow.h \
     button.h \
-    wheel.h \
-    configurationwindow.h
+    configurationwindow.h \
+    wheel.h
 
 INCLUDEPATH += $$PWD/../GameLogic/Engine
 DEPENDPATH += $$PWD/../GameLogic/Engine

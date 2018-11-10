@@ -8,8 +8,8 @@
 #include <QGraphicsTextItem>
 #include <QGraphicsRectItem>
 #include <QGraphicsPolygonItem>
-#include <wheel.h>
 #include <QPushButton>
+#include <wheel.h>
 
 /***
  size: 300x720
@@ -35,14 +35,16 @@ public:
 
 signals:
     void start_game();
+    void animate_inner_wheel(int target_degree);
+    void animate_outter_wheel(int target_degree);
 
 public slots:
     void on_closing();
 
 private slots:
     void save_game();
-    void spin_wheel();
     void deactivate_start_button();
+    void spin_wheel();
 
 
 private:
@@ -71,15 +73,14 @@ private:
     QHash<QString, QGraphicsTextItem*> points_txt;
 
     // wheel
-    Wheel* wheel;
+    Wheel *inner_wheel, *outter_wheel;
+    QGraphicsPolygonItem* marker;
 
-    // wheel_output and bounding box
-    QGraphicsTextItem* wheel_output;
-    QGraphicsRectItem* wheel_bb;
 
     void initialize_points();
     void show_top10();
-
+    void initialize_inner_wheel();
+    void initialize_outter_wheel();
 };
 
 #endif // CONTROLBOARD_H

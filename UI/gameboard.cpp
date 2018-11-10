@@ -2,6 +2,8 @@
 #include<pawn.hh>
 #include<hex.hh>
 #include<iostream>
+#include<actor.hh>
+#include<transport.hh>
 
 
 GameBoard::~GameBoard()
@@ -71,6 +73,8 @@ void GameBoard::removePawn(int pawnId)
     GameBoard::pawn_list.erase(pawn_it);
 }
 
+
+
 void GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
 {
     auto pawn_data = GameBoard::pawn_list.at(pawnId);
@@ -82,40 +86,65 @@ void GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
     new_hex_ptr->addPawn(pawn_ptr);
 }
 
-std::shared_ptr<Common::Hex> GameBoard::findActor(int actorId) const
+
+void GameBoard::addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoordinate actor_coord)
 {
-    Common::CubeCoordinate coord;
+    auto hex_ptr = GameBoard::getHex(actor_coord);
 
-    for (auto it=GameBoard::hex_list.begin(); it!= GameBoard::hex_list.end(); it++)
+    if (hex_ptr->giveActor(actor->getId()) == nullptr)
     {
-
-        if (it->second->giveActor(actorId) != nullptr)
-        {
-            coord = it->second->getCoordinates();
-            break;
-        }
+        hex_ptr->addActor(actor);
     }
 
-    auto hex_ptr = GameBoard::hex_list.at(GameBoard::coordToString(coord));
-
-    return hex_ptr;
+    GameBoard::actor_list[actor->getId()] = std::make_pair(actor, hex_ptr);
 }
+
 
 void GameBoard::moveActor(int actorId, Common::CubeCoordinate actorCoord)
 {
-    auto old_hex_ptr = GameBoard::findActor(actorId);
-    auto new_hex_ptr = GameBoard::hex_list.at(GameBoard::coordToString(actorCoord));
+    auto actor_data = GameBoard::actor_list[actorId];
+    auto new_hex_ptr = GameBoard::hex_list[GameBoard::coordToString(actorCoord)];
 
-    auto actor_ptr = old_hex_ptr->giveActor(actorId);
-    old_hex_ptr->removeActor(actor_ptr);
-    new_hex_ptr->addActor(actor_ptr);
+    actor_data.second->removeActor(actor_data.first);
+    new_hex_ptr->addActor(actor_data.first);
+    actor_data.first->move(new_hex_ptr);
 }
 
 void GameBoard::removeActor(int actorId)
 {
-    auto hex_ptr = GameBoard::findActor(actorId);
-    auto actor_ptr = hex_ptr->giveActor(actorId);
-    hex_ptr->removeActor(actor_ptr);
+    auto it = GameBoard::actor_list.find(actorId);
+    it->second.second->removeActor(it->second.first);
+    GameBoard::actor_list.erase(it);
+}
+
+void GameBoard::addTransport(std::shared_ptr<Common::Transport> transport, Common::CubeCoordinate transport_coord)
+{
+    auto hex_ptr = GameBoard::getHex(transport_coord);
+
+    if (hex_ptr->giveTransport(transport->getId()) == nullptr)
+    {
+        hex_ptr->addTransport(transport);
+    }
+
+    GameBoard::transport_list[transport->getId()] = std::make_pair(transport, hex_ptr);
+}
+
+
+void GameBoard::moveTransport(int id, Common::CubeCoordinate transport_coord)
+{
+    auto transport_data = GameBoard::transport_list[id];
+    auto new_hex_ptr = GameBoard::hex_list[GameBoard::coordToString(transport_coord)];
+
+    transport_data.second->removeTransport(transport_data.first);
+    new_hex_ptr->addTransport(transport_data.first);
+    transport_data.first->move(new_hex_ptr);
+}
+
+void GameBoard::removeTransport(int id)
+{
+    auto it = GameBoard::transport_list.find(id);
+    it->second.second->removeTransport(it->second.first);
+    GameBoard::transport_list.erase(it);
 }
 
 std::string GameBoard::coordToString(Common::CubeCoordinate coord) const
@@ -124,13 +153,6 @@ std::string GameBoard::coordToString(Common::CubeCoordinate coord) const
     return key;
 }
 
-std::pair<int,int> GameBoard::CubeToRegularCoordinate(Common::CubeCoordinate coord)
-{
-    int x,y;
-    x = coord.x + coord.y -5;
-    y = coord.y - coord.x -7;
-    return std::make_pair(x,y);
-}
 
 void GameBoard::print_hex_list() const
 {

@@ -11,12 +11,13 @@
 #include <QPushButton>
 #include <wheel.h>
 #include <igamerunner.hh>
+#include <gamestate.hh>
 
 /***
  size: 300x720
  TODO:
- - correct statistic & game state initialize in constructor
- - write statistic update slots
+ - implement save current game
+ - update_top10() relies on condition that 10 textItem were created -> ensure top10 variable has 10 element in mainwindow
 
  ***/
 class ControlBoard: public QGraphicsView
@@ -25,8 +26,7 @@ class ControlBoard: public QGraphicsView
 public:
     // constructor
     ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
-                 QSharedPointer<QHash<QString, int>> current_points,
-                 QSharedPointer<QHash<QString, int>> top10,
+                 std::shared_ptr<GameState> game_state,
                  QWidget* parent);
 
     ~ControlBoard();
@@ -37,10 +37,11 @@ signals:
     void control_board_close(); // signal caught by parent object
 
 public slots:
-    void update_current_turn(QString current_player); // allow parent to update current turn
-    void update_stage(QString current_stage); // allow parent to update current stage
-    void update_movement_left(int movement_left); // allow parent to update movement left
-    void update_point(QStringList player_names); // allow parent to update points and top10
+    void update_current_turn(); // allow parent to update current turn
+    void update_stage(); // allow parent to update current stage
+    void update_movement_left(); // allow parent to update movement left
+    void update_point(std::vector<int> player_IDs); // allow parent to update points
+    void update_top10();
 
 private slots:
     void save_button_clicked(); // perform saving game & emit control_board_close() to parent & call close()
@@ -52,19 +53,12 @@ private slots:
 
 private:
     std::shared_ptr<Common::IGameRunner> game_engine;
+    std::shared_ptr<GameState> game_state;
+
     // data structure that keeps items
     QGraphicsScene* scene;
 
     bool allow_quit = false;
-
-    // players' point
-    QSharedPointer<QHash<QString, int>> points;
-
-    // top10 list
-    QSharedPointer<QHash<QString, int>> top10;
-
-    // configuration
-    QSharedPointer<Configuration> config;
 
     // buttons
     QPushButton* play_button;
@@ -77,6 +71,7 @@ private:
     // player points, top10 text
     QGraphicsTextItem *points_title, *top10_title;
     QHash<QString, QGraphicsTextItem*> points_txt;
+    QVector<QGraphicsTextItem*> top10_txt;
 
     // wheel
     Wheel *inner_wheel, *outter_wheel;
@@ -84,7 +79,7 @@ private:
 
 
     void initialize_points();
-    void show_top10();
+    void initialize_top10();
     void initialize_inner_wheel();
     void initialize_outter_wheel();
 

@@ -2,44 +2,49 @@
 #define GAMESTATE_HH
 
 #include "igamestate.hh"
-
+#include <unordered_map>
+#include <QString>
+#include <player.hh>
+#include <vector>
 
 class GameState : public Common::IGameState
 {
 public:
-    GameState(Common::GamePhase game_phase, int first_player);
+    GameState(Common::GamePhase current_phase,
+              int current_player_id,
+              std::vector<std::shared_ptr<Common::IPlayer>> players,
+              std::shared_ptr<std::unordered_map<int, std::string>> player_names,
+              std::shared_ptr<std::unordered_map<std::string, int>> points,
+              std::shared_ptr<std::vector<std::pair<std::string, int>>> top10);
+
     ~GameState();
-    /**
-     * @brief currentGamePhase tells the phase of the game.
-     * @return The phase of the game.
-     * @post Exception quarantee: nothrow
-     */
+
     virtual Common::GamePhase currentGamePhase() const;
 
-    /**
-     * @brief currentPlayer tells the player in turn.
-     * @return The identifier of the player in turn.
-     * @post Excetion quarantee: nothrow
-     */
     virtual int currentPlayer() const;
 
-    /**
-     * @brief changeGamePhase sets the phase of the game.
-     * @param newPhase The next phase of the game.
-     * @post Game phase changed. Exception quarantee: basic
-     */
+    std::string currentPlayerName() const;
+
+    std::string get_player_name(int player_id);
+
+    QString currentGamePhaseName() const;
+
     virtual void changeGamePhase(Common::GamePhase nextPhase);
 
-    /**
-     * @brief changePlayerTurn sets the player in turn.
-     * @param nextPlayer The identifier of the next player in turn.
-     * @post Turn changed to player nextPlayer. Exception quarantee: basic
-     */
     virtual void changePlayerTurn(int nextPlayer);
 
+    unsigned int getActionsLeft() const;
+
+    std::shared_ptr<std::unordered_map<std::string, int>> points;
+    std::shared_ptr<std::vector<std::pair<std::string, int>>> top10;
+
 private:
-    Common::GamePhase _gamephase;
-    int _current_player;
+    Common::GamePhase current_phase;
+    int current_player_id;
+    std::string current_player;
+    std::vector<std::shared_ptr<Common::IPlayer>> players_ptr;
+    std::shared_ptr<std::unordered_map<int, std::string>> player_names;
+
 };
 
 #endif // GAMESTATE_HH

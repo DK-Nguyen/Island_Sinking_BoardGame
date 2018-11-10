@@ -30,18 +30,15 @@ void ControlBoard::closeEvent(QCloseEvent *event)
 }
 
 ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
-                           QSharedPointer<QHash<QString, int>> current_points,
-                           QSharedPointer<QHash<QString, int>> top10,
+                           std::shared_ptr<GameState> game_state,
                            QWidget* parent)
     : QGraphicsView (parent)
 
 {
-
-    this->config = config;
-    this->points = current_points;
-    this->top10 = top10;
     this->game_engine = game_engine;
+    this->game_state = game_state;
     this->allow_quit = false;
+
 
     setFixedSize(350, 720);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -76,21 +73,21 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     connect(quit_button, SIGNAL(clicked()), this, SLOT(quit_button_clicked()));
 
     // handle game state display
-    current_turn = new QGraphicsTextItem(tr("Current Turn: Player 1"));
+    current_turn = new QGraphicsTextItem(tr("Current Turn: ") + QString::fromUtf8(game_state->currentPlayerName().c_str()));
     current_turn->adjustSize();
     current_turn->setPos(95, 70);
     scene->addItem(current_turn);
     current_turn->setScale(1.1);
 
-    stage = new QGraphicsTextItem(tr("Stage: movement"));
+    stage = new QGraphicsTextItem(tr("Stage: ") + game_state->currentGamePhaseName());
     stage->adjustSize();
     stage->setPos(105, 100);
     scene->addItem(stage);
     stage->setScale(1.1);
 
-    movement_left = new QGraphicsTextItem(tr("Move Left: 3"));
+    movement_left = new QGraphicsTextItem(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
     movement_left->adjustSize();
-    movement_left->setPos(125, 130);
+    movement_left->setPos(115, 130);
     scene->addItem(movement_left);
     movement_left->setScale(1.1);
 
@@ -108,15 +105,13 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     top10_title->setPos(190, 170);
     scene->addItem(top10_title);
     top10_title->setScale(1.25);
-    show_top10();
+    initialize_top10();
 
     // handle wheel
     initialize_inner_wheel();
     initialize_outter_wheel();
 
 }
-
-
 
 void ControlBoard::save_button_clicked()
 // TODO: perform saving function
@@ -187,21 +182,45 @@ void ControlBoard::deactivate_play_button()
     return;
 }
 
-void ControlBoard::update_current_turn(QString current_player)
+void ControlBoard::update_current_turn()
 {
+    current_turn->setPlainText(tr("Current Turn: ") + QString::fromUtf8(game_state->currentPlayerName().c_str()));
     return;
 }
-void ControlBoard::update_stage(QString current_stage)
+void ControlBoard::update_stage()
 {
+    stage->setPlainText(tr("Stage: ") + game_state->currentGamePhaseName());
     return;
 }
-void ControlBoard::update_movement_left(int movement_left)
+void ControlBoard::update_movement_left()
 {
+    movement_left->setPlainText(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
     return;
 }
-void ControlBoard::update_point(QStringList)
+void ControlBoard::update_point(std::vector<int> player_IDs)
 {
+    for (auto player_id : player_IDs)
+    {
+        auto player_name = QString::fromUtf8(game_state->get_player_name(player_id).c_str());
+        auto text = points_txt[player_name];
+        text->setPlainText(tr("• ") + player_name +
+                           tr(": ") + QString::number(game_state->points->at(game_state->get_player_name(player_id))));
+    }
     return;
+}
+
+void ControlBoard::update_top10()
+{
+    int index = 0;
+    for (auto it : *(game_state->top10))
+    {
+        QString player_data = tr("• ") +
+                              QString::fromUtf8(it.first.c_str()) +
+                              tr(": ") + QString::number(it.second);
+
+        top10_txt[index]->setPlainText(player_data);
+        index += 1;
+    }
 }
 
 void ControlBoard::initialize_points()
@@ -210,9 +229,12 @@ void ControlBoard::initialize_points()
     int x = 15;
     int y = 200;
 
-    for (auto it = (*points).begin(); it!= (*points).end(); it++)
+    for (auto it = (*(game_state->points)).begin(); it!= (*(game_state->points)).end(); it++)
     {
-        QString player_data = tr("• ") + it.key() + tr(": ") + QString::number(it.value());
+        QString player_data = tr("• ") +
+                QString::fromUtf8(it->first.c_str()) +
+                tr(": ") + QString::number(it->second);
+
         auto text = new QGraphicsTextItem(player_data);
         text->adjustSize();
         text->setPos(x, y);
@@ -221,25 +243,30 @@ void ControlBoard::initialize_points()
         y += 25;
 
         // keep pointers to text items
-        points_txt[it.key()] = text;
+        points_txt[QString::fromUtf8(it->first.c_str())] = text;
     }
 }
 
-void ControlBoard::show_top10()
+void ControlBoard::initialize_top10()
 // visualize top 10 players
 {
     int x = 190;
     int y = 200;
 
-    for (auto it = (*top10).begin(); it!= (*top10).end(); it++)
+    for (auto it : *(game_state->top10))
     {
-        QString player_data = tr("• ") + it.key() + tr(": ") + QString::number(it.value());
+        QString player_data = tr("• ") +
+                              QString::fromUtf8(it.first.c_str()) +
+                              tr(": ") + QString::number(it.second);
         auto text = new QGraphicsTextItem(player_data);
         text->adjustSize();
         text->setPos(x, y);
         scene->addItem(text);
         text->setScale(1.1);
         y += 25;
+
+        // keep pointers to text items
+        top10_txt.push_back(text);
     }
 }
 

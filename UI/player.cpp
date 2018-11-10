@@ -1,24 +1,28 @@
 #include<player.hh>
 
+Player::Player(int id)
+{
+    this->id = id;
+}
+
 Player::~Player()
 {
    return;
 }
-Player::Player(int playerId): _playerId(playerId){}
 
 int Player::getPlayerId() const
 {
-    return Player::_playerId;
+    return Player::id;
 }
 
 unsigned int Player::getActionsLeft() const
 {
-    return Player::_actionsLeft;
+    return Player::actions_left;
 }
 
 void Player::setActionsLeft(unsigned int actionsLeft)
 {
-    Player::_actionsLeft = actionsLeft;
+    Player::actions_left = actionsLeft;
 }
 
 

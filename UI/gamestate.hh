@@ -19,9 +19,9 @@ public:
 
     ~GameState();
 
-    virtual Common::GamePhase currentGamePhase() const;
+    Common::GamePhase currentGamePhase() const;
 
-    virtual int currentPlayer() const;
+    int currentPlayer() const;
 
     std::string currentPlayerName() const;
 
@@ -29,9 +29,9 @@ public:
 
     QString currentGamePhaseName() const;
 
-    virtual void changeGamePhase(Common::GamePhase nextPhase);
+    void changeGamePhase(Common::GamePhase nextPhase);
 
-    virtual void changePlayerTurn(int nextPlayer);
+    void changePlayerTurn(int nextPlayer);
 
     unsigned int getActionsLeft() const;
 

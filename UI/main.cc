@@ -3,10 +3,11 @@
 #include "player.hh"
 #include "initialize.hh"
 #include<iostream>
-#include <hexboard.h>
+#include "hexboard.h"
 #include <memory>
 #include <QApplication>
-#include <controlboard.h>
+#include "controlboard.h"
+#include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -49,7 +50,26 @@ int main(int argc, char *argv[])
     game_board_ptr->print_hex_list();
     game_board_ptr->print_hex_stat();
 
-    ControlBoard* main_window = new ControlBoard(game_runner_ptr, game_state_ptr, nullptr);
+    MainWindow * main_window = new MainWindow(game_runner_ptr,
+                                              game_board_ptr,
+                                              game_state_ptr,
+                                              players,
+                                              player_names,
+                                              points,
+                                              top10,
+                                              nullptr);
+
+//    HexBoard* main_window = new HexBoard(game_runner_ptr,
+//                                         game_board_ptr,
+//                                         game_state_ptr,
+//                                         players,
+//                                         650,
+//                                         720,
+//                                         10,
+//                                         nullptr);
+
+
+//    ControlBoard* main_window = new ControlBoard(game_runner_ptr, game_state_ptr, 1.0, nullptr);
     main_window->show();
 
     return a.exec();

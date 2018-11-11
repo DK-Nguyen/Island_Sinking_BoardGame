@@ -1,4 +1,4 @@
-#include<player.hh>
+﻿#include<player.hh>
 
 Player::Player(int id)
 {
@@ -14,6 +14,7 @@ int Player::getPlayerId() const
 {
     return Player::id;
 }
+
 
 unsigned int Player::getActionsLeft() const
 {

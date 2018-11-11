@@ -1,4 +1,4 @@
-#include "hexboard.h"
+﻿#include "hexboard.h"
 #include <QGraphicsTextItem>
 #include <hex.hh>
 #include <graphichex.h>
@@ -7,6 +7,9 @@
 #include <gameengine.hh>
 #include <QVector>
 #include <QPointF>
+#include <QScrollBar>
+#include <QTimeLine>
+#include <QWheelEvent>
 
 HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
                        std::shared_ptr<GameBoard> gameboard_ptr,
@@ -14,7 +17,7 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
                        std::vector<std::shared_ptr<Common::IPlayer>> game_players,
                        int width,
                        int height,
-                       int scale,
+                       int board_scale,
                        QWidget* parent)
     : QGraphicsView (parent)
 
@@ -24,7 +27,7 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
     this->gameboard_ptr = gameboard_ptr;
     this->gamestate_ptr = gamestate_ptr;
     this->game_players = game_players;
-    this->scale = scale;
+    this->board_scale = board_scale;
     this->width = width;
     this->height = height;
 
@@ -34,14 +37,20 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
     //setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFixedSize(width, height);
 
+    h_scrollbar = new QScrollBar(this);
+    h_scrollbar->setMinimumHeight(200);
+
+    v_scrollbar = new QScrollBar(this);
+    v_scrollbar->setMinimumWidth(200);
+
+    setHorizontalScrollBar(h_scrollbar);
+    setVerticalScrollBar(v_scrollbar);
+
     // set up the scene
     scene = new QGraphicsScene();
-    scene->setSceneRect(0,0,160*scale,180*scale);
+    scene->setSceneRect(0,0,160*board_scale,180*board_scale);
     setScene(scene);
-}
 
-void HexBoard::start()
-{
     scene->clear();
     populate();
 }
@@ -59,6 +68,37 @@ void HexBoard::plot_center_hex()
             break;
         }
     }
+}
+
+void HexBoard::wheelEvent(QWheelEvent *event)
+{
+    int numDegrees = event->delta() / 8;
+    int numSteps = numDegrees / 15; // see QWheelEvent documentation
+    wheel_schedule += numSteps;
+    if (wheel_schedule * numSteps < 0) // if user moved the wheel in another direction, we reset previously scheduled scalings
+    wheel_schedule = numSteps;
+
+    QTimeLine *anim = new QTimeLine(350, this);
+    anim->setUpdateInterval(20);
+
+    connect(anim, SIGNAL (valueChanged(qreal)), SLOT (scalingTime(qreal)));
+    connect(anim, SIGNAL (finished()), SLOT (animFinished()));
+    anim->start();
+}
+
+void HexBoard::scalingTime(qreal x)
+{
+    qreal factor = 1.0+ qreal(wheel_schedule) / 300.0;
+    this->scale(factor, factor);
+}
+
+void HexBoard::animFinished()
+{
+    if (wheel_schedule > 0)
+    wheel_schedule--;
+    else
+    wheel_schedule++;
+    sender()->~QObject();
 }
 
 // add hex to scene
@@ -103,12 +143,12 @@ QVector<QPointF> HexBoard::cube_to_vertex(Common::CubeCoordinate coord)
 {
     auto center = cube_to_plane(coord);
     QVector<QPointF> vertex;
-    vertex << scale*QPointF(center.first, center.second-3.5);
-    vertex << scale*QPointF(center.first +3, center.second-1.5);
-    vertex << scale*QPointF(center.first +3, center.second+1.5);
-    vertex << scale*QPointF(center.first, center.second+3.5);
-    vertex << scale*QPointF(center.first -3, center.second+1.5);
-    vertex << scale*QPointF(center.first -3, center.second-1.5);
+    vertex << board_scale*QPointF(center.first, center.second-3.5);
+    vertex << board_scale*QPointF(center.first +3, center.second-1.5);
+    vertex << board_scale*QPointF(center.first +3, center.second+1.5);
+    vertex << board_scale*QPointF(center.first, center.second+3.5);
+    vertex << board_scale*QPointF(center.first -3, center.second+1.5);
+    vertex << board_scale*QPointF(center.first -3, center.second-1.5);
 
     return vertex;
 }

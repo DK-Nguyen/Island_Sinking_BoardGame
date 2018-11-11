@@ -20,6 +20,24 @@
  - update_top10() relies on condition that 10 textItem were created -> ensure top10 variable has 10 element in mainwindow
 
  ***/
+
+const int WIDTH = 350;
+const int HEIGHT = 720;
+const std::pair<int, int> BUTTON_SIZE = std::make_pair(70,35);
+const QPointF PLAY_BUTTON_POS = QPointF(35,15);
+const QPointF SAVE_BUTTON_POS = QPointF(140,15);
+const QPointF QUIT_BUTTON_POS = QPointF(245,15);
+const QPointF TURN_POS = QPointF(95,70);
+const QPointF STAGE_POS = QPointF(105,100);
+const QPointF ACTION_POS = QPointF(115,130);
+const QPointF POINT_TT_POS = QPointF(15,170);
+const QPointF TOP10_TT_POS = QPointF(190,170);
+const QPointF POINT_POS = QPointF(15,200);
+const QPointF TOP10_POS = QPointF(190,200);
+const QPointF WHEEL_POS = QPointF(40,500);
+
+
+
 class ControlBoard: public QGraphicsView
 {
     Q_OBJECT
@@ -27,7 +45,9 @@ public:
     // constructor
     ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
                  std::shared_ptr<GameState> game_state,
+                 double board_scale,
                  QWidget* parent);
+
 
     ~ControlBoard();
 
@@ -54,6 +74,7 @@ private slots:
 private:
     std::shared_ptr<Common::IGameRunner> game_engine;
     std::shared_ptr<GameState> game_state;
+    double board_scale;
 
     // data structure that keeps items
     QGraphicsScene* scene;
@@ -82,8 +103,6 @@ private:
     void initialize_top10();
     void initialize_inner_wheel();
     void initialize_outter_wheel();
-
-    void closeEvent(QCloseEvent* event);
 };
 
 #endif // CONTROLBOARD_H

@@ -19,9 +19,9 @@ GameState::GameState(Common::GamePhase current_phase,
     this->current_phase = current_phase;
     this->current_player_id = current_player_id;
     this->players_ptr = players;
-    this->player_names = player_names;
     this->points = points;
     this->top10 = top10;
+    this->player_names = player_names;
 }
 
 Common::GamePhase GameState::currentGamePhase() const

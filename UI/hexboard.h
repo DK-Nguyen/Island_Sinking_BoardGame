@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+﻿#ifndef HEXBOARD_H
+#define HEXBOARD_H
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -18,15 +18,14 @@ class HexBoard: public QGraphicsView{
     Q_OBJECT
 public:
     // constructors
-    HexBoard(QWidget* parent=nullptr);
     HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
-               std::shared_ptr<GameBoard> gameboard_ptr,
-               std::shared_ptr<GameState> gamestate_ptr,
-               std::vector<std::shared_ptr<Common::IPlayer>> game_players,
-               int width,
-                int height,
-               int scale,
-               QWidget* parent=nullptr);
+             std::shared_ptr<GameBoard> gameboard_ptr,
+             std::shared_ptr<GameState> gamestate_ptr,
+             std::vector<std::shared_ptr<Common::IPlayer>> game_players,
+             int width,
+             int height,
+             int board_scale,
+             QWidget* parent=nullptr);
 
     // add hex to scene
     void add_hex(std::shared_ptr<Common::Hex> hex_ptr);
@@ -54,13 +53,21 @@ public:
     std::shared_ptr<GameBoard> gameboard_ptr;
     std::shared_ptr<GameState> gamestate_ptr;
     std::vector<std::shared_ptr<Common::IPlayer>> game_players;
-    int scale, width, height;
+    int board_scale, width, height;
+
+private slots:
+    void scalingTime(qreal x);
+    void animFinished();
 
 
-public slots:
-    void start();
+private:
+    QScrollBar *h_scrollbar, *v_scrollbar;
+
+    void wheelEvent(QWheelEvent * event);
+    int wheel_schedule=10;
+
 };
 
 
 
-#endif // MAINWINDOW_H
+#endif // HEXBOARD_H

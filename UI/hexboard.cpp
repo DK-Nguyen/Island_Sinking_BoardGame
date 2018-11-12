@@ -1,4 +1,4 @@
-﻿#include "hexboard.h"
+#include "hexboard.h"
 #include <QGraphicsTextItem>
 #include <hex.hh>
 #include <graphichex.h>
@@ -10,6 +10,8 @@
 #include <QScrollBar>
 #include <QTimeLine>
 #include <QWheelEvent>
+#include <illegalmoveexception.hh>
+#include <iostream>
 
 HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
                        std::shared_ptr<GameBoard> gameboard_ptr,
@@ -38,10 +40,10 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
     setFixedSize(width, height);
 
     h_scrollbar = new QScrollBar(this);
-    h_scrollbar->setMinimumHeight(200);
+    h_scrollbar->setMinimumHeight(100);
 
     v_scrollbar = new QScrollBar(this);
-    v_scrollbar->setMinimumWidth(200);
+    v_scrollbar->setMinimumWidth(100);
 
     setHorizontalScrollBar(h_scrollbar);
     setVerticalScrollBar(v_scrollbar);
@@ -55,18 +57,27 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
     populate();
 }
 
-void HexBoard::plot_center_hex()
+
+void HexBoard::hex_clicked(int id)
+// TODO: check when flip result return actor's name -> what's that for?
 {
-    scene->clear();
-    for (auto& it: gameboard_ptr->hex_list)
+    if (gamestate_ptr->currentGamePhase() != 2)
     {
-        // populate hex
-        auto coord = it.second->getCoordinates();
-        if (coord.x == 0 && coord.y == 0 && coord.z == 0)
+        return;
+    }
+
+    auto graphic_hex = graphic_hex_list[id];
+    auto coord = graphic_hex->get_hex()->getCoordinates();
+    try {
+        auto flip_result = game_engine_ptr->flipTile(coord);
+
+        std::cerr << "finish trying to flip tile \n";
+        if (flip_result.compare("") == 0)
         {
-            add_hex(it.second);
-            break;
+            graphic_hex->flip();
         }
+    } catch (Common::IllegalMoveException exception) {
+        std::cerr << "******EXCEPTION: " << exception.msg() << "\n";
     }
 }
 
@@ -102,26 +113,32 @@ void HexBoard::animFinished()
 }
 
 // add hex to scene
-void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr)
+void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
 {
     // calculate vertex coordinates
     QVector<QPointF> vertex = cube_to_vertex(hex_ptr->getCoordinates());
 
     // create graphic_hex object
-    GraphicHex* graphic_hex = new GraphicHex(hex_ptr, vertex);
+    GraphicHex* graphic_hex = new GraphicHex(hex_ptr, vertex, id);
 
     // add graphic_hex to scene
     scene->addItem(graphic_hex);
+
+    // add to list of graphic hex
+    graphic_hex_list.insert(id, graphic_hex);
+
+    connect(graphic_hex, SIGNAL(clicked(int)), this, SLOT(hex_clicked(int)));
 }
 
 // populate main window based on data from game_board, TODO add pawn and actors part
 void HexBoard::populate()
 {
-
+    int id = 0;
     for (auto& it: gameboard_ptr->hex_list)
     {
         // populate hex
-        add_hex(it.second);
+        add_hex(it.second, id);
+        id += 1;
 
         // populate pawn
 

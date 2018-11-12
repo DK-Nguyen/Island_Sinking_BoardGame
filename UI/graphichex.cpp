@@ -5,10 +5,16 @@
 #include <QBrush>
 #include <QColor>
 
-GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, QGraphicsItem* parent): QGraphicsPolygonItem (parent)
+GraphicHex::~GraphicHex()
+{
+    return;
+}
+
+GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, int id, QGraphicsItem* parent): QGraphicsPolygonItem (parent)
 {
     this->vertex = vertex;
     this->hex_ptr = hex_ptr;
+    this->id = id;
 
     // create a polygon with vertex
     QPolygonF hexagon(vertex);
@@ -21,6 +27,7 @@ GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> ve
 // perform flipping of hex tile
 void GraphicHex::flip()
 {
+    set_color("Water");
     return;
 }
 
@@ -59,9 +66,17 @@ void GraphicHex::set_color(std::string type)
     setBrush(brush);
 
 }
-GraphicHex::~GraphicHex()
+
+std::shared_ptr<Common::Hex> GraphicHex::get_hex()
 {
-    return;
+    return hex_ptr;
 }
+
+void GraphicHex::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    emit clicked(id);
+}
+
+
 
 

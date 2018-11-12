@@ -11,7 +11,6 @@
 struct Configuration{
     QStringList players;
     int no_pawn;
-    QHash<QString, int> top10;
 };
 
 
@@ -24,7 +23,7 @@ public:
     ~ConfigurationWindow();
 
 signals:
-    void game_start(QSharedPointer<Configuration>);
+    void game_start(Configuration config);
 
 private slots:
     void play_clicked();
@@ -34,7 +33,7 @@ private:
     QPushButton* play;
     QPushButton* quit;
     QPushButton* load;
-    QLabel* label;
+    QLabel *line_edit_lb, *spinbox_lb;
     QLineEdit* line_edit;
     QSpinBox* pawn_getter;
 

@@ -1,8 +1,9 @@
-#include <configurationwindow.h>
+﻿#include <configurationwindow.h>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QString>
 
 ConfigurationWindow::~ConfigurationWindow()
 {
@@ -13,17 +14,21 @@ ConfigurationWindow::ConfigurationWindow(QWidget* parent)
     : QDialog (parent)
 {
     // player name part
-    label = new QLabel(tr("Player names"));
+    line_edit_lb = new QLabel(tr("Player names"));
     line_edit = new QLineEdit();
-    label->setBuddy(line_edit);
+    line_edit_lb->setBuddy(line_edit);
 
     // number of pawn
+    spinbox_lb = new QLabel(tr("Pawns per player"));
     pawn_getter = new QSpinBox();
     pawn_getter->setRange(2,4);
+    spinbox_lb->setBuddy(pawn_getter);
+
 
     // load button
     load = new QPushButton(tr("Load..."));
     load->setToolTip(tr("Load previously saved game"));
+    load->setEnabled(false);
 
     // play button
     play = new QPushButton(tr("Play"));
@@ -33,8 +38,12 @@ ConfigurationWindow::ConfigurationWindow(QWidget* parent)
 
     // perform layouting
     QHBoxLayout* top = new QHBoxLayout();
-    top->addWidget(label);
+    top->addWidget(line_edit_lb);
     top->addWidget(line_edit);
+
+    QHBoxLayout* middle = new QHBoxLayout();
+    middle->addWidget(spinbox_lb);
+    middle->addWidget(pawn_getter);
 
     QHBoxLayout* bottom = new QHBoxLayout();
     bottom->addWidget(load);
@@ -43,17 +52,18 @@ ConfigurationWindow::ConfigurationWindow(QWidget* parent)
 
     QVBoxLayout* main_layout = new QVBoxLayout();
     main_layout->addLayout(top);
+    main_layout->addLayout(middle);
     main_layout->addLayout(bottom);
     setLayout(main_layout);
 
-    setWindowTitle(tr("Configuration"));
+    setWindowTitle(tr("Island Game Configuration"));
     setFixedHeight(sizeHint().height());
 
 
     // connect signals and slots
-    QObject::connect(load, SIGNAL(clicked()), this, SLOT(load_from_file()));
-    QObject::connect(play, SIGNAL(clicked()), this, SLOT(play_clicked()));
-    QObject::connect(quit, SIGNAL(clicked()), this, SLOT(close()));
+    connect(load, SIGNAL(clicked()), this, SLOT(load_from_file()));
+    connect(play, SIGNAL(clicked()), this, SLOT(play_clicked()));
+    connect(quit, SIGNAL(clicked()), this, SLOT(close()));
 
 }
 
@@ -69,8 +79,9 @@ void ConfigurationWindow::load_from_file()
 }
 
 void ConfigurationWindow::play_clicked()
-// TODO: read saved top10 list
 {
+
+    // get players' name
     QString player_string = line_edit->text();
     if (player_string.isEmpty())
     {
@@ -80,8 +91,8 @@ void ConfigurationWindow::play_clicked()
         return;
     }
 
-    QStringList players = player_string.split(",", QString::SkipEmptyParts);
-    if (players.size() <2)
+    QStringList players_ = player_string.split(",", QString::SkipEmptyParts);
+    if (players_.size() <2)
     {
         QMessageBox mes;
         mes.setText("At least two player names must be specified");
@@ -89,14 +100,23 @@ void ConfigurationWindow::play_clicked()
         return;
     }
 
+    QStringList players = QStringList();
+
+    for (auto name : players_){
+        players.append(name.simplified());
+    }
+    // get pawn number
     int no_pawn = pawn_getter->value();
 
-    Configuration* config_ptr = new Configuration();
-    config_ptr->no_pawn = no_pawn;
-    config_ptr->players = players;
 
-    QSharedPointer<Configuration> qconfig_ptr(config_ptr);
 
-    emit game_start(qconfig_ptr);
+
+    Configuration config;
+    config.no_pawn = no_pawn;
+    config.players = players;
+
+    emit game_start(config);
+
+    close();
     return;
 }

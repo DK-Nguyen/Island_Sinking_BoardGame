@@ -254,11 +254,20 @@ void ControlBoard::initialize_inner_wheel()
     inner_wheel->setScale(0.35*board_scale);
     scene->addItem(inner_wheel);
 
-    QPointF target_pos = WHEEL_POS*board_scale - inner_wheel->scenePos()*board_scale;
-    inner_wheel->setPos(target_pos);
+    auto pos = inner_wheel->scenePos();
+    std::cerr << "inner wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
 
     connect(inner_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
     connect(this, SIGNAL(animate_inner_wheel(int)), inner_wheel, SLOT(spin(int)));
+
+    QPointF target_pos = WHEEL_POS*board_scale - inner_wheel->scenePos()*board_scale;
+    inner_wheel->setPos(target_pos);
+
+    pos = inner_wheel->scenePos();
+    std::cerr << "inner wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
+
+//    auto rect = inner_wheel->boundingRect();
+//    std::cerr << "inner wheel bbox: " << rect.x() << ", " << rect.y() << ", " << rect.width() << ", " << rect.height() << "\n";
 }
 
 void ControlBoard::initialize_outter_wheel()
@@ -268,14 +277,26 @@ void ControlBoard::initialize_outter_wheel()
     outter_wheel->setScale(0.35*board_scale);
     scene->addItem(outter_wheel);
 
+    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
+    connect(this, SIGNAL(animate_outter_wheel(int)), outter_wheel, SLOT(spin(int)));
+
+    auto pos = outter_wheel->scenePos();
+    auto origin = outter_wheel->transformOriginPoint();
+    std::cerr << "outter wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
+    std::cerr << "transform origin: " << origin.rx() << ", " << origin.ry() << "\n";
+
     QPointF target_pos = WHEEL_POS*board_scale - outter_wheel->scenePos()*board_scale;
     outter_wheel->setPos(target_pos);
+
+    pos = outter_wheel->scenePos();
+    origin = outter_wheel->transformOriginPoint();
+    std::cerr << "outter wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
+    std::cerr << "transform origin: " << origin.rx() << ", " << origin.ry() << "\n";
+
 
     // marker
     QVector<QPointF> vertex;
     QPointF v1 = outter_wheel->pos() + QPointF(410, 300)*board_scale;
-
-    std::cerr << v1.rx() << ", " << v1.ry() << "\n";
 
     vertex.push_back(v1);
     vertex.push_back(v1 + QPointF(20, -10)*board_scale);
@@ -290,8 +311,6 @@ void ControlBoard::initialize_outter_wheel()
     marker->setBrush(brush);
     scene->addItem(marker);
 
-    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
-    connect(this, SIGNAL(animate_outter_wheel(int)), outter_wheel, SLOT(spin(int)));
 }
 
 

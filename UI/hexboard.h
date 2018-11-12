@@ -1,4 +1,4 @@
-﻿#ifndef HEXBOARD_H
+#ifndef HEXBOARD_H
 #define HEXBOARD_H
 
 #include <QGraphicsView>
@@ -28,7 +28,7 @@ public:
              QWidget* parent=nullptr);
 
     // add hex to scene
-    void add_hex(std::shared_ptr<Common::Hex> hex_ptr);
+    void add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id);
 
     // populate main window based on data from game_board
     void populate();
@@ -42,9 +42,6 @@ public:
     // convert 2D coordinate to cube coordinate
     Common::CubeCoordinate plane_to_cube(int x_pos, int y_pos);
 
-    // test plot only 1 hex
-    void plot_center_hex();
-
 
     // container to hold items
     QGraphicsScene* scene;
@@ -54,6 +51,10 @@ public:
     std::shared_ptr<GameState> gamestate_ptr;
     std::vector<std::shared_ptr<Common::IPlayer>> game_players;
     int board_scale, width, height;
+
+
+public slots:
+    void hex_clicked(int id); // receive click signal from hex object and perform hex flipping if valid
 
 private slots:
     void scalingTime(qreal x);
@@ -65,6 +66,8 @@ private:
 
     void wheelEvent(QWheelEvent * event);
     int wheel_schedule=10;
+
+    QHash<int, GraphicHex*> graphic_hex_list;
 
 };
 

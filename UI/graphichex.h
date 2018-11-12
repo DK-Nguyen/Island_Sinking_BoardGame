@@ -6,10 +6,13 @@
 #include<QVector>
 #include<QPointF>
 
-class GraphicHex: public QGraphicsPolygonItem{
+class GraphicHex: public QObject, public QGraphicsPolygonItem{
+
+    Q_OBJECT
+
 public:
 
-    GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, QGraphicsItem* parent=nullptr);
+    GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, int id, QGraphicsItem* parent=nullptr);
     ~GraphicHex();
 
     // flip
@@ -18,6 +21,15 @@ public:
     // set color
     void set_color(std::string type);
 
+    std::shared_ptr<Common::Hex> get_hex();
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
+signals:
+    void clicked(int id);
+
+private:
+    int id;
     std::shared_ptr<Common::Hex> hex_ptr;
     QVector<QPointF> vertex;
 

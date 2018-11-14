@@ -43,12 +43,14 @@ private:
     std::shared_ptr<GameBoard> game_board;
     std::shared_ptr<GameState> game_state;
     std::vector<std::shared_ptr<Common::IPlayer>> players;
+    std::vector<std::pair<int, int>> pawn_list;
     std::shared_ptr<std::unordered_map<int, std::string>> player_names;
     std::shared_ptr<std::unordered_map<std::string, int>> points;
     std::shared_ptr<std::vector<std::pair<std::string, int>>> top10;
     HexBoard* hex_board;
     ControlBoard* control_board;
     Configuration config;
+    std::vector<Common::CubeCoordinate> mountain_tiles;
 
     void construct_window();
 

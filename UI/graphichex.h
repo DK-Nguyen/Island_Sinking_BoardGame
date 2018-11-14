@@ -23,7 +23,14 @@ public:
 
     std::shared_ptr<Common::Hex> get_hex();
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    QVector<QPointF> get_vertex();
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+
+protected:
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
+    void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
 signals:
     void clicked(int id);

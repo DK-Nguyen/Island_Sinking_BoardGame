@@ -21,7 +21,7 @@ ConfigurationWindow::ConfigurationWindow(QWidget* parent)
     // number of pawn
     spinbox_lb = new QLabel(tr("Pawns per player"));
     pawn_getter = new QSpinBox();
-    pawn_getter->setRange(2,4);
+    pawn_getter->setRange(1,3);
     spinbox_lb->setBuddy(pawn_getter);
 
 

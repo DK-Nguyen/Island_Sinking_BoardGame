@@ -12,6 +12,8 @@
 #include <QWheelEvent>
 #include <illegalmoveexception.hh>
 #include <iostream>
+#include <cmath>
+#include <cstdlib>
 
 HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
                        std::shared_ptr<GameBoard> gameboard_ptr,
@@ -25,14 +27,31 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
 
 {
 
-    this->game_engine_ptr = game_engine_ptr;
-    this->gameboard_ptr = gameboard_ptr;
-    this->gamestate_ptr = gamestate_ptr;
-    this->game_players = game_players;
+    this->game_engine = game_engine_ptr;
+    this->game_board = gameboard_ptr;
+    this->game_state = gamestate_ptr;
+    this->players = game_players;
     this->board_scale = board_scale;
     this->width = width;
     this->height = height;
 
+    QVector<QColor> player_colors;
+    player_colors.push_back(Qt::red);
+    player_colors.push_back(Qt::black);
+    player_colors.push_back(Qt::blue);
+    player_colors.push_back(Qt::white);
+    player_colors.push_back(QColor(128, 0, 128));
+    player_colors.push_back(QColor(165, 42, 42));
+    player_colors.push_back(QColor(245, 130, 48));
+    player_colors.push_back(QColor(255, 250, 200));
+
+    int player_count = 0;
+    for (auto player : game_players)
+    {
+        auto name = QString::fromUtf8(game_state->get_player_name(player->getPlayerId()).c_str());
+        pawn_colors[name] = player_colors[player_count];
+        player_count += 1;
+    }
 
     // set up the screen
     //setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -61,7 +80,7 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
 void HexBoard::hex_clicked(int id)
 // TODO: check when flip result return actor's name -> what's that for?
 {
-    if (gamestate_ptr->currentGamePhase() != 2)
+    if (game_state->currentGamePhase() != 2)
     {
         return;
     }
@@ -69,7 +88,7 @@ void HexBoard::hex_clicked(int id)
     auto graphic_hex = graphic_hex_list[id];
     auto coord = graphic_hex->get_hex()->getCoordinates();
     try {
-        auto flip_result = game_engine_ptr->flipTile(coord);
+        auto flip_result = game_engine->flipTile(coord);
 
         std::cerr << "finish trying to flip tile \n";
         if (flip_result.compare("") == 0)
@@ -81,12 +100,27 @@ void HexBoard::hex_clicked(int id)
     }
 }
 
+void HexBoard::pawn_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos)
+{
+    // check and perform pawn movement
+}
+
+void HexBoard::actor_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos)
+{
+    // check and perform actor movement
+}
+
+void HexBoard::transport_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos)
+{
+    // check and perform transport movement
+}
+
 void HexBoard::wheelEvent(QWheelEvent *event)
 {
     int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15; // see QWheelEvent documentation
+    int numSteps = numDegrees / 15;
     wheel_schedule += numSteps;
-    if (wheel_schedule * numSteps < 0) // if user moved the wheel in another direction, we reset previously scheduled scalings
+    if (wheel_schedule * numSteps < 0)
     wheel_schedule = numSteps;
 
     QTimeLine *anim = new QTimeLine(350, this);
@@ -95,6 +129,39 @@ void HexBoard::wheelEvent(QWheelEvent *event)
     connect(anim, SIGNAL (valueChanged(qreal)), SLOT (scalingTime(qreal)));
     connect(anim, SIGNAL (finished()), SLOT (animFinished()));
     anim->start();
+}
+
+void HexBoard::add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr)
+// TODO: add signals and slots related to pawn movement and such
+{
+    auto hex_coord = pawn_ptr->getCoordinates();
+    auto pawn_pos = generate_pawn_position(hex_coord);
+    auto owner = game_state->get_player_name(pawn_ptr->getPlayerId());
+    auto pawn_color = get_pawn_color(owner);
+
+    QVector<QPointF> pawn_vertex;
+    pawn_vertex << QPointF(0,0)*board_scale;
+    pawn_vertex << QPointF(1,0)*board_scale;
+    pawn_vertex << QPointF(1,1)*board_scale;
+    pawn_vertex << QPointF(0,1)*board_scale;
+
+    auto graphic_pawn = new GraphicPawn(pawn_ptr, pawn_vertex, pawn_color, owner);
+
+    scene->addItem(graphic_pawn);
+    graphic_pawn->setPos(pawn_pos.first*board_scale, pawn_pos.second*board_scale);
+    graphic_pawn_list.insert(pawn_id, graphic_pawn);
+    connect(graphic_pawn, SIGNAL(pawn_is_moved(int, QPointF, QPointF)), this, SLOT(pawn_is_moved(int, QPointF, QPointF)));
+
+}
+
+void HexBoard::add_actor(int actor_id, std::shared_ptr<Common::Actor> actor_ptr)
+{
+
+}
+
+void HexBoard::add_transport(int transport_id, std::shared_ptr<Common::Transport> transport_ptr)
+{
+
 }
 
 void HexBoard::scalingTime(qreal x)
@@ -116,7 +183,15 @@ void HexBoard::animFinished()
 void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
 {
     // calculate vertex coordinates
-    QVector<QPointF> vertex = cube_to_vertex(hex_ptr->getCoordinates());
+    QVector<QPointF> vertex = cube_to_hex_vertex(hex_ptr->getCoordinates());
+    if (hex_ptr->getActorTypes().size()>0)
+    {
+        std::cerr << "actor type: " << hex_ptr->getActorTypes()[0] << "\n";
+    }
+    if (hex_ptr->getTransports().size()>0)
+    {
+        std::cerr << "exist transport\n";
+    }
 
     // create graphic_hex object
     GraphicHex* graphic_hex = new GraphicHex(hex_ptr, vertex, id);
@@ -133,32 +208,42 @@ void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
 // populate main window based on data from game_board, TODO add pawn and actors part
 void HexBoard::populate()
 {
-    int id = 0;
-    for (auto& it: gameboard_ptr->hex_list)
+    // add hex
+    int hex_id = 0;
+    for (auto it: *(game_board->getHexList()))
     {
-        // populate hex
-        add_hex(it.second, id);
-        id += 1;
-
-        // populate pawn
-
-        // populate actors
+        add_hex(it.second, hex_id);
+        hex_id += 1;
     }
+
+    // add pawns
+    for (auto it: *(game_board->getPawnList()))
+    {
+        int pawn_id = it.first;
+        auto pawn_ptr = it.second.first;
+
+        std::cerr << "adding pawn \n";
+        add_pawn(pawn_id, pawn_ptr);
+    }
+
+    GraphicActor* actor = new GraphicActor(nullptr, nullptr);
+    scene->addItem(actor);
+    actor->setPos(300,300);
 }
 
 // convert cube coordinate to 2D coordinate
-std::pair<long,long> HexBoard::cube_to_plane(Common::CubeCoordinate coord)
+std::pair<double, double> HexBoard::cube_to_hex_center(Common::CubeCoordinate coord)
 {
-    long x, y;
+    double x, y;
     x = 3*coord.x - 3*coord.y + 67;
     y = 5*coord.x + 5*coord.y + 76.5;
     return std::make_pair(x,y);
 }
 
 // convert cube coordinate to hex vertices coordinate
-QVector<QPointF> HexBoard::cube_to_vertex(Common::CubeCoordinate coord)
+QVector<QPointF> HexBoard::cube_to_hex_vertex(Common::CubeCoordinate coord)
 {
-    auto center = cube_to_plane(coord);
+    auto center = cube_to_hex_center(coord);
     QVector<QPointF> vertex;
     vertex << board_scale*QPointF(center.first, center.second-3.5);
     vertex << board_scale*QPointF(center.first +3, center.second-1.5);
@@ -170,10 +255,47 @@ QVector<QPointF> HexBoard::cube_to_vertex(Common::CubeCoordinate coord)
     return vertex;
 }
 
-// convert 2D coordinate to cube coordinate, TODO complete code
-Common::CubeCoordinate HexBoard::plane_to_cube(int x_pos, int y_pos)
+
+
+std::pair<double, double> HexBoard::generate_pawn_position(Common::CubeCoordinate coord)
 {
-    Common::CubeCoordinate coord;
-    return coord;
+    auto hex_center = cube_to_hex_center(coord);
+
+    QString key = QString::number(coord.x) + QString::number(coord.y);
+    // if no key exist -> 1st pawn in the hex
+    if (pawn_vertices.find(key) == pawn_vertices.end())
+    {
+        pawn_vertices[key] = 1;
+        auto pawn_center = std::make_pair(hex_center.first-2.5, hex_center.second-0.5);
+        return pawn_center;
+    }
+    else
+    {
+        int no_existing_pawn = pawn_vertices[key];
+        if (no_existing_pawn == 1)
+        {
+            pawn_vertices[key] += 1;
+            auto pawn_center = std::make_pair(hex_center.first-1.5, hex_center.second-2.0);
+            return pawn_center;
+        }
+        else if (no_existing_pawn == 2)
+        {
+            pawn_vertices[key] += 1;
+            auto pawn_center = std::make_pair(hex_center.first+0.5, hex_center.second-2.0);
+            return pawn_center;
+        }
+        else
+        {
+            pawn_vertices[key] += 1;
+            auto pawn_center = std::make_pair(hex_center.first+1.5, hex_center.second-0.5);
+            return pawn_center;
+        }
+    }
+}
+
+
+QColor HexBoard::get_pawn_color(std::string pawn_owner)
+{
+    return pawn_colors[QString::fromUtf8(pawn_owner.c_str())];
 }
 

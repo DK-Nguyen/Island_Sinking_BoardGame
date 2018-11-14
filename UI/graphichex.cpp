@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QBrush>
 #include <QColor>
+#include <QGraphicsSceneMouseEvent>
 
 GraphicHex::~GraphicHex()
 {
@@ -22,6 +23,7 @@ GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> ve
     // draw the poly
     setPolygon(hexagon);
     set_color(hex_ptr->getPieceType());
+    setAcceptDrops(true);
 }
 
 // perform flipping of hex tile
@@ -53,7 +55,7 @@ void GraphicHex::set_color(std::string type)
     }
     else if (type.compare("Water")==0)
     {
-        color = Qt::blue;
+        color = QColor(0, 191, 255);
     }
     else
     {
@@ -72,9 +74,33 @@ std::shared_ptr<Common::Hex> GraphicHex::get_hex()
     return hex_ptr;
 }
 
+QVector<QPointF> GraphicHex::get_vertex()
+{
+    return vertex;
+}
+
 void GraphicHex::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     emit clicked(id);
+}
+
+void GraphicHex::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+     event->setAccepted(true);
+     update();
+}
+
+
+void GraphicHex::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+{
+    event->setAccepted(true);
+    update();
+}
+
+void GraphicHex::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    Q_UNUSED(event);
+    update();
 }
 
 

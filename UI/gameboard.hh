@@ -9,43 +9,48 @@
 class GameBoard : public Common::IGameBoard
 {
 public:
-    GameBoard() = default;
+    GameBoard();
     ~GameBoard();
-    virtual int checkTileOccupation(Common::CubeCoordinate tileCoord) const;
+    int checkTileOccupation(Common::CubeCoordinate tileCoord) const;
 
-    virtual bool isWaterTile(Common::CubeCoordinate tileCoord) const;
+    bool isWaterTile(Common::CubeCoordinate tileCoord) const;
 
-    virtual void addHex(std::shared_ptr<Common::Hex> newHex);
+    void addHex(std::shared_ptr<Common::Hex> newHex);
 
-    virtual std::shared_ptr<Common::Hex> getHex(Common::CubeCoordinate hexCoord) const;
+    std::shared_ptr<Common::Hex> getHex(Common::CubeCoordinate hexCoord) const;
 
-    virtual void addPawn(int playerId, int pawnId);
+    void addPawn(int playerId, int pawnId);
 
-    virtual void movePawn(int pawnId, Common::CubeCoordinate pawnCoord);
+    void addPawn(int playerId, int pawnId, Common::CubeCoordinate coord);
 
-    virtual void removePawn(int pawnId);
+    void movePawn(int pawnId, Common::CubeCoordinate pawnCoord);
 
-    virtual void addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoordinate actor_coord);
+    void removePawn(int pawnId);
 
-    virtual void moveActor(int actorId, Common::CubeCoordinate actorCoord);
+    void addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoordinate actor_coord);
 
-    virtual void removeActor(int actorId);
+    void moveActor(int actorId, Common::CubeCoordinate actorCoord);
 
-    virtual void addTransport(std::shared_ptr<Common::Transport> transport, Common::CubeCoordinate transport_coord);
+    void removeActor(int actorId);
 
-    virtual void moveTransport(int id, Common::CubeCoordinate transport_coord);
+    void addTransport(std::shared_ptr<Common::Transport> transport, Common::CubeCoordinate transport_coord);
 
-    virtual void removeTransport(int id);
+    void moveTransport(int id, Common::CubeCoordinate transport_coord);
 
-    void print_hex_list() const;
-    void print_hex_stat() const;
+    void removeTransport(int id);
 
-    std::unordered_map<std::string, std::shared_ptr<Common::Hex>> hex_list;
-    std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>> pawn_list;
-    std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex>>> actor_list;
-    std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex>>> transport_list;
+    std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Common::Hex>>> getHexList();
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>>> getPawnList();
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex>>>> getActorList();
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex>>>> getTransportList();
 
 private:
+
+    // key = cube.x + '-' + cube.y + '-' + cube.z, value = ptr to hex
+    std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Common::Hex>>> hex_list;
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>>> pawn_list;
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex>>>> actor_list;
+    std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex>>>> transport_list;
 
     std::string coordToString(Common::CubeCoordinate coord) const;
 };

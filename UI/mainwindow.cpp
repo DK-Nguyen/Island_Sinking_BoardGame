@@ -9,43 +9,64 @@ MainWindow::MainWindow(std::shared_ptr<std::vector<std::pair<std::string, int>>>
     : QWidget (parent)
 {
     this->top10 = top10;
+    mountain_tiles.push_back(Common::CubeCoordinate(0,1,-1));
+    mountain_tiles.push_back(Common::CubeCoordinate(1,0,-1));
+    mountain_tiles.push_back(Common::CubeCoordinate(1,-1,0));
+    mountain_tiles.push_back(Common::CubeCoordinate(0,-1,1));
+    mountain_tiles.push_back(Common::CubeCoordinate(-1,0,1));
+    mountain_tiles.push_back(Common::CubeCoordinate(1,1,0));
+
 }
 
 void MainWindow::initialize_game(Configuration config)
 {
-    std::cerr << "initializing main window\n";
+
     this->config = config;
 
+    game_board = std::make_shared<GameBoard>();
     player_names = std::make_shared<std::unordered_map<int, std::string>>();
     points = std::make_shared<std::unordered_map<std::string, int>>();
     int player_id = 0;
+    int pawn_id = config.players.size() + 10;
 
     for (auto name : config.players)
     {
         auto player_ptr = std::make_shared<Player>(player_id);
-        player_id += 1;
+
         player_ptr->setActionsLeft(3);
         players.push_back(player_ptr);
         player_names->insert(std::make_pair(player_id, name.toUtf8().constData()));
         points->insert(std::make_pair(name.toUtf8().constData(), 0));
+
+        for (auto i=0; i< config.no_pawn; i++)
+        {
+            auto pawn_data = std::make_pair(player_id, pawn_id);
+            pawn_list.push_back(pawn_data);
+            pawn_id += 1;
+        }
+        player_id += 1;
     }
 
-    std::cerr << "player configuration finished\n";
-
-    game_board = std::make_shared<GameBoard>();
 
     game_state = std::make_shared<GameState>(Common::GamePhase(1), 1, players, player_names, points, top10);
 
+
     game_runner = Common::Initialization::getGameRunner(game_board, game_state, players);
 
-    std::cerr << "game engine initialization finished\n";
 
+    unsigned int pawn_count = 0;
+    unsigned int index;
+    for (auto pawn_data : pawn_list)
+    {
+        index = pawn_count / 4;
+        game_board->addPawn(pawn_data.first, pawn_data.second, mountain_tiles[index]);
+        pawn_count++;
+    }
     construct_window();
 }
 
 void MainWindow::construct_window()
 {
-    std::cerr << "constructing main window finished\n";
 
     setFixedSize(WINDOW_WIDTH*BOARD_SCALE, WINDOW_HEIGHT*BOARD_SCALE);
 

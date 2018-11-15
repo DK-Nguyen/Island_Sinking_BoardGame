@@ -6,3 +6,4 @@ SUBDIRS += \
     GameLogic
 
 UI.depends = GameLogic
+Tests.depends = UI

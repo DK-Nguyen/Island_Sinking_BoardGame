@@ -20,6 +20,7 @@ private slots:
     void testInit();
     void testChangeGamePhase();
     void testChangePlayerTurn();
+    void testgetActionsLeft();
 };
 
 gamestatetest::gamestatetest()
@@ -42,7 +43,7 @@ void gamestatetest::testInit()
     players.push_back(player_ptr);
     player_names->insert(std::make_pair(0, "dat"));
     points->insert(std::make_pair("dat", 0));
-    // ad the second player with id=1 and name "khoa", 0 point
+    // add the second player with id=1 and name "khoa", 0 point
     std::shared_ptr<Player> player_ptr2 = std::make_shared<Player>(1);
     players.push_back(player_ptr2);
     player_names->insert(std::make_pair(1, "khoa"));
@@ -80,6 +81,35 @@ void gamestatetest::testChangePlayerTurn()
 
     game_state->changePlayerTurn(2);
     QCOMPARE(game_state->currentPlayer(), 2);
+}
+
+void gamestatetest::testgetActionsLeft()
+{
+    std::vector<std::shared_ptr<Common::IPlayer>> players;
+    auto player_names = std::make_shared<std::unordered_map<int, std::string>>();
+    auto points = std::make_shared<std::unordered_map<std::string, int>>();
+    auto top10 =  std::make_shared<std::vector<std::pair<std::string, int>>>();
+
+    // add the first player with id=0 and name "dat", 0 point
+    std::shared_ptr<Player> player_ptr = std::make_shared<Player>(0);
+    players.push_back(player_ptr);
+    player_names->insert(std::make_pair(0, "dat"));
+    points->insert(std::make_pair("dat", 0));
+    player_ptr->setActionsLeft(3);
+    // add the second player with id=1 and name "khoa", 0 point
+    std::shared_ptr<Player> player_ptr2 = std::make_shared<Player>(1);
+    players.push_back(player_ptr2);
+    player_names->insert(std::make_pair(1, "khoa"));
+    points->insert(std::make_pair("khoa", 0));
+    player_ptr2->setActionsLeft(2);
+
+    auto game_state = std::make_shared<GameState>
+            (Common::GamePhase(1), 0, players, player_names, points, top10);
+
+    QCOMPARE(game_state->getActionsLeft(), 3u);
+
+    game_state->changePlayerTurn(1);
+    QCOMPARE(game_state->getActionsLeft(), 2u);
 }
 
 

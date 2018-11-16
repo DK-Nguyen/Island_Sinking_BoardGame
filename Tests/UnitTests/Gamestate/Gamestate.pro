@@ -12,14 +12,17 @@ TARGET = tst_gamestatetest
 SOURCES +=  \
             tst_gamestatetest.cpp \
             ../../../UI/gamestate.cpp \
+            ../../../UI/player.cpp \
             ../../../GameLogic/Engine/gameexception.cpp \
+
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 
 HEADERS += \
         ../../../UI/gamestate.hh \
-        ../../../GameLogic/Engine/igamestate.hh
+        ../../../UI/player.hh \
+        ../../../GameLogic/Engine/igamestate.hh \
 
 INCLUDEPATH += \
             ../../../UI \

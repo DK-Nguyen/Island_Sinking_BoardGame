@@ -16,16 +16,35 @@ BuildUnitTests:
   stage: build
   tags:
     - qt
-  script: 
-    - cd Tests
-    - qmake Tests.pro
+  script:
+    - cd Tests/UnitTests
+    - qmake UnitTests.pro
     - make
     - make clean
-  artifacts: 
+  artifacts:
     paths:
-      - Tests/UnitTests/*/bin
-      - Tests/IntegrationTests/*/bin
+      - "Tests/UnitTests/*/bin/*"
+      - "Tests/UnitTests/*/*.gcno"
     expire_in: 2d
+
+#
+GameBoard:
+  stage: test
+  tags:
+    - qt
+  before_script:
+    - mkdir -p coverage/UnitTests
+  script: 
+    - cd Tests/UnitTests/GameBoard/
+    - ./bin/tst_gameboardtest
+    - gcov *.gcno -r
+    #- cp gameboard.*.gcov ../../../coverage/UnitTests
+  artifacts:
+    paths:
+      - "Tests/UnitTests/*/gameboard.*.gcov"
+    expire_in: 2d
+  dependencies: 
+    - BuildUnitTests
 
 # Compile and prepare the source code for analysis.
 # The output is stored in directory bw_output
@@ -58,6 +77,7 @@ PerformAnalysis:
     - master
   dependencies:
     - PrepareAnalysis
+    - GameBoard
 
 # Performs the normal analysis and sends results to SonarQube
 PerformBranchAnalysis:
@@ -73,3 +93,4 @@ PerformBranchAnalysis:
     - master
   dependencies:
     - PrepareAnalysis
+    - GameBoard

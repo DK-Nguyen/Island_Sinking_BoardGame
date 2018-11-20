@@ -192,7 +192,7 @@ void GameBoardTest::testMoveActor()
 {
     generateTileCircle(1);
 
-    for(int i = 0; i < TST_MAX_SIDES; ++i)
+    for (int i = 0; i < TST_MAX_SIDES; ++i)
     {
         addActor(i, center_, TST_DEFAULT_ACTOR_TYPE);
         QVERIFY(board_->getHex(center_)->giveActor(i));

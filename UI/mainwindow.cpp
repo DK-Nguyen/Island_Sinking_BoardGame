@@ -23,7 +23,7 @@ void MainWindow::initialize_game(Configuration config)
 
     this->config = config;
 
-    game_board = std::make_shared<GameBoard>();
+    game_board = std::make_shared<Student::GameBoard>();
     player_names = std::make_shared<std::unordered_map<int, std::string>>();
     points = std::make_shared<std::unordered_map<std::string, int>>();
     int player_id = 0;

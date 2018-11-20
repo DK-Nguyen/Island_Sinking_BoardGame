@@ -17,7 +17,7 @@
 #include <cstdlib>
 
 HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
-                       std::shared_ptr<GameBoard> gameboard_ptr,
+                       std::shared_ptr<Student::GameBoard> gameboard_ptr,
                        std::shared_ptr<GameState> gamestate_ptr,
                        std::vector<std::shared_ptr<Common::IPlayer>> game_players,
                        int width,

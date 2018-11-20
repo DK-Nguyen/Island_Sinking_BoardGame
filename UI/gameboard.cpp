@@ -6,7 +6,7 @@
 #include<transport.hh>
 
 
-GameBoard::GameBoard()
+Student::GameBoard::GameBoard()
 {
     hex_list = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Common::Hex>>>();
     pawn_list = std::make_shared<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>>>();
@@ -14,7 +14,7 @@ GameBoard::GameBoard()
     transport_list = std::make_shared<std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex>>>>();
 }
 
-GameBoard::~GameBoard()
+Student::GameBoard::~GameBoard()
 {
     GameBoard::hex_list->clear();
     GameBoard::pawn_list->clear();
@@ -22,16 +22,20 @@ GameBoard::~GameBoard()
     GameBoard::actor_list->clear();
     return;
 }
-int GameBoard::checkTileOccupation(Common::CubeCoordinate tileCoord) const
+int Student::GameBoard::checkTileOccupation(Common::CubeCoordinate tileCoord) const
 {
     auto hex_ptr = GameBoard::getHex(tileCoord);
+    if (hex_ptr == nullptr) {
+        return -1;
+    }
     return hex_ptr->getPawnAmount();
 }
 
-bool GameBoard::isWaterTile(Common::CubeCoordinate tileCoord) const
+bool Student::GameBoard::isWaterTile(Common::CubeCoordinate tileCoord) const
 {
     auto hex_ptr = GameBoard::getHex(tileCoord);
-    if (hex_ptr->getPieceType().compare("Water")==0)
+//    if (hex_ptr->getPieceType().compare("Water")==0)
+    if (hex_ptr->getPieceType() == "Water")
     {
         return true;
     }
@@ -41,14 +45,19 @@ bool GameBoard::isWaterTile(Common::CubeCoordinate tileCoord) const
     }
 }
 
-void GameBoard::addHex(std::shared_ptr<Common::Hex> newHex)
+void Student::GameBoard::addHex(std::shared_ptr<Common::Hex> newHex)
 {
     auto hex_coord = newHex->getCoordinates();
     std::string hex_key = GameBoard::coordToString(hex_coord);
+    // find if the hex is already there in the game board
+    if (getHex(hex_coord) != nullptr) {
+        auto iter = GameBoard::hex_list->find(hex_key);
+        GameBoard::hex_list->erase(iter);
+    }
     GameBoard::hex_list->insert(std::make_pair(hex_key, newHex));
 }
 
-std::shared_ptr<Common::Hex> GameBoard::getHex(Common::CubeCoordinate hexCoord) const
+std::shared_ptr<Common::Hex> Student::GameBoard::getHex(Common::CubeCoordinate hexCoord) const
 {
     std::string hex_key = GameBoard::coordToString(hexCoord);
 
@@ -63,16 +72,16 @@ std::shared_ptr<Common::Hex> GameBoard::getHex(Common::CubeCoordinate hexCoord) 
     }
 }
 
-void GameBoard::addPawn(int playerId, int pawnId)
+void Student::GameBoard::addPawn(int playerId, int pawnId)
 {
     Common::CubeCoordinate pawn_coord = Common::CubeCoordinate(0,0,0);
     std::shared_ptr<Common::Pawn> pawn_ptr = std::make_shared<Common::Pawn>(pawnId, playerId, pawn_coord);
     auto hex_ptr = GameBoard::getHex(pawn_coord);
     hex_ptr->addPawn(pawn_ptr);
-    GameBoard::pawn_list->insert(std::make_pair(pawnId, std::make_pair(pawn_ptr, hex_ptr)));
+    Student::GameBoard::pawn_list->insert(std::make_pair(pawnId, std::make_pair(pawn_ptr, hex_ptr)));
 }
 
-void GameBoard::addPawn(int playerId, int pawnId, Common::CubeCoordinate coord)
+void Student::GameBoard::addPawn(int playerId, int pawnId, Common::CubeCoordinate coord)
 {
     std::shared_ptr<Common::Pawn> pawn_ptr = std::make_shared<Common::Pawn>(pawnId, playerId, coord);
     auto hex_ptr = GameBoard::getHex(coord);
@@ -80,7 +89,7 @@ void GameBoard::addPawn(int playerId, int pawnId, Common::CubeCoordinate coord)
     GameBoard::pawn_list->insert(std::make_pair(pawnId, std::make_pair(pawn_ptr, hex_ptr)));
 }
 
-void GameBoard::removePawn(int pawnId)
+void Student::GameBoard::removePawn(int pawnId)
 {
     auto pawn_it = GameBoard::pawn_list->find(pawnId);
     auto pawn_ptr = pawn_it->second.first;
@@ -91,7 +100,7 @@ void GameBoard::removePawn(int pawnId)
 
 
 
-void GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
+void Student::GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
 {
     auto pawn_data = GameBoard::pawn_list->at(pawnId);
     auto pawn_ptr = pawn_data.first;
@@ -103,7 +112,7 @@ void GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
 }
 
 
-void GameBoard::addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoordinate actor_coord)
+void Student::GameBoard::addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoordinate actor_coord)
 {
     auto hex_ptr = GameBoard::getHex(actor_coord);
 
@@ -116,7 +125,7 @@ void GameBoard::addActor(std::shared_ptr<Common::Actor> actor, Common::CubeCoord
 }
 
 
-void GameBoard::moveActor(int actorId, Common::CubeCoordinate actorCoord)
+void Student::GameBoard::moveActor(int actorId, Common::CubeCoordinate actorCoord)
 {
     auto actor_data = GameBoard::actor_list->at(actorId);
     auto new_hex_ptr = GameBoard::hex_list->at(GameBoard::coordToString(actorCoord));
@@ -126,14 +135,14 @@ void GameBoard::moveActor(int actorId, Common::CubeCoordinate actorCoord)
     actor_data.first->move(new_hex_ptr);
 }
 
-void GameBoard::removeActor(int actorId)
+void Student::GameBoard::removeActor(int actorId)
 {
     auto it = GameBoard::actor_list->find(actorId);
     it->second.second->removeActor(it->second.first);
     GameBoard::actor_list->erase(it);
 }
 
-void GameBoard::addTransport(std::shared_ptr<Common::Transport> transport, Common::CubeCoordinate transport_coord)
+void Student::GameBoard::addTransport(std::shared_ptr<Common::Transport> transport, Common::CubeCoordinate transport_coord)
 {
     auto hex_ptr = GameBoard::getHex(transport_coord);
 
@@ -151,7 +160,7 @@ void GameBoard::addTransport(std::shared_ptr<Common::Transport> transport, Commo
 }
 
 
-void GameBoard::moveTransport(int id, Common::CubeCoordinate transport_coord)
+void Student::GameBoard::moveTransport(int id, Common::CubeCoordinate transport_coord)
 {
     auto transport_data = GameBoard::transport_list->at(id);
     auto new_hex_ptr = GameBoard::hex_list->at(GameBoard::coordToString(transport_coord));
@@ -161,34 +170,34 @@ void GameBoard::moveTransport(int id, Common::CubeCoordinate transport_coord)
     transport_data.first->move(new_hex_ptr);
 }
 
-void GameBoard::removeTransport(int id)
+void Student::GameBoard::removeTransport(int id)
 {
     auto it = GameBoard::transport_list->find(id);
     it->second.second->removeTransport(it->second.first);
     GameBoard::transport_list->erase(it);
 }
 
-std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Common::Hex> > > GameBoard::getHexList()
+std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Common::Hex> > > Student::GameBoard::getHexList()
 {
     return hex_list;
 }
 
-std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex> > > > GameBoard::getPawnList()
+std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex> > > > Student::GameBoard::getPawnList()
 {
     return pawn_list;
 }
 
-std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex> > > > GameBoard::getActorList()
+std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex> > > > Student::GameBoard::getActorList()
 {
     return actor_list;
 }
 
-std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex> > > > GameBoard::getTransportList()
+std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Transport>, std::shared_ptr<Common::Hex> > > > Student::GameBoard::getTransportList()
 {
     return transport_list;
 }
 
-std::string GameBoard::coordToString(Common::CubeCoordinate coord) const
+std::string Student::GameBoard::coordToString(Common::CubeCoordinate coord) const
 {
     std::string key = std::to_string(coord.x) + "+" + std::to_string(coord.y) + "+" + std::to_string(coord.z);
     return key;

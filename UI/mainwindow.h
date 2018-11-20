@@ -40,7 +40,7 @@ public slots:
 
 private:
     std::shared_ptr<Common::IGameRunner> game_runner;
-    std::shared_ptr<GameBoard> game_board;
+    std::shared_ptr<Student::GameBoard> game_board;
     std::shared_ptr<GameState> game_state;
     std::vector<std::shared_ptr<Common::IPlayer>> players;
     std::vector<std::pair<int, int>> pawn_list;

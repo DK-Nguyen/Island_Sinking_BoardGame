@@ -6,6 +6,7 @@
 
 #include "igameboard.hh"
 
+namespace Student {
 class GameBoard : public Common::IGameBoard
 {
 public:
@@ -54,4 +55,5 @@ private:
 
     std::string coordToString(Common::CubeCoordinate coord) const;
 };
+}
 #endif // GAMEBOARD_HH

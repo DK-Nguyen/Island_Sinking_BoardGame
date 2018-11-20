@@ -23,7 +23,7 @@ class HexBoard: public QGraphicsView{
 public:
     // constructors
     HexBoard(std::shared_ptr<Common::IGameRunner> game_engine,
-             std::shared_ptr<GameBoard> game_board,
+             std::shared_ptr<Student::GameBoard> game_board,
              std::shared_ptr<GameState> game_state,
              std::vector<std::shared_ptr<Common::IPlayer>> players,
              int width,
@@ -35,7 +35,7 @@ public:
     QGraphicsScene* scene;
 
     std::shared_ptr<Common::IGameRunner> game_engine;
-    std::shared_ptr<GameBoard> game_board;
+    std::shared_ptr<Student::GameBoard> game_board;
     std::shared_ptr<GameState> game_state;
     std::vector<std::shared_ptr<Common::IPlayer>> players;
     int board_scale, width, height;

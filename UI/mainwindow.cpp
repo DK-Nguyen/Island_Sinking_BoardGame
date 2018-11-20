@@ -100,6 +100,8 @@ void MainWindow::construct_window()
     setLayout(layout);
 
     connect(control_board, SIGNAL(control_board_close()), this, SLOT(quit_game()));
+    connect(hex_board, SIGNAL(change_stage()), control_board, SLOT(update_stage()));
+    connect(hex_board, SIGNAL(change_movement_left()), control_board, SLOT(update_movement_left()));
 
     this->show();
 }

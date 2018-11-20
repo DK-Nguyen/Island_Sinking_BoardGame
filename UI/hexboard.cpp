@@ -13,6 +13,7 @@
 #include <illegalmoveexception.hh>
 #include <iostream>
 #include <cmath>
+#include <list>
 #include <cstdlib>
 
 HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
@@ -37,7 +38,6 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
 
     QVector<QColor> player_colors;
     player_colors.push_back(Qt::red);
-    player_colors.push_back(Qt::black);
     player_colors.push_back(Qt::blue);
     player_colors.push_back(Qt::white);
     player_colors.push_back(QColor(128, 0, 128));
@@ -103,6 +103,36 @@ void HexBoard::hex_clicked(int id)
 void HexBoard::pawn_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos)
 {
     // check and perform pawn movement
+    std::cerr << "pawn is moved\n";
+
+    auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale+0.5, old_pos.ry()/board_scale+0.5);
+    auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale+0.5, new_pos.ry()/board_scale+0.5);
+
+    std::cerr << "old cube coord: " << old_cube_pos.x << ", " << old_cube_pos.y << " \n";
+    std::cerr << "new cube coord: " << new_cube_pos.x << ", " << new_cube_pos.y << " \n";
+
+    int move_left = game_engine->checkPawnMovement(old_cube_pos, new_cube_pos, pawn_id);
+    if (move_left == -1)
+    {
+        std::cerr << "pawn movement is forbidden \n";
+        graphic_pawn_list[pawn_id]->setPos(old_pos);
+        update();
+    }
+    else
+    {
+        std::cerr << "move left: " << move_left << "\n";
+        game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
+        game_state->setActionsLeft(move_left);
+
+        emit(change_movement_left());
+        if (move_left == 0)
+        {
+            game_state->changeGamePhase(Common::GamePhase(2));
+            emit(set_pawn_movement(false, current_player_pawn_list));
+            current_player_pawn_list.clear();
+            emit(change_stage());
+        }
+    }
 }
 
 void HexBoard::actor_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos)
@@ -132,7 +162,6 @@ void HexBoard::wheelEvent(QWheelEvent *event)
 }
 
 void HexBoard::add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr)
-// TODO: add signals and slots related to pawn movement and such
 {
     auto hex_coord = pawn_ptr->getCoordinates();
     auto pawn_pos = generate_pawn_position(hex_coord);
@@ -150,8 +179,9 @@ void HexBoard::add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr)
     scene->addItem(graphic_pawn);
     graphic_pawn->setPos(pawn_pos.first*board_scale, pawn_pos.second*board_scale);
     graphic_pawn_list.insert(pawn_id, graphic_pawn);
-    connect(graphic_pawn, SIGNAL(pawn_is_moved(int, QPointF, QPointF)), this, SLOT(pawn_is_moved(int, QPointF, QPointF)));
 
+    connect(graphic_pawn, SIGNAL(pawn_is_moved(int, QPointF, QPointF)), this, SLOT(pawn_is_moved(int, QPointF, QPointF)));
+    connect(this, SIGNAL(set_pawn_movement(bool, std::list<int>)), graphic_pawn, SLOT(allow_movement(bool, std::list<int>)));
 }
 
 void HexBoard::add_actor(int actor_id, std::shared_ptr<Common::Actor> actor_ptr)
@@ -161,6 +191,17 @@ void HexBoard::add_actor(int actor_id, std::shared_ptr<Common::Actor> actor_ptr)
 
 void HexBoard::add_transport(int transport_id, std::shared_ptr<Common::Transport> transport_ptr)
 {
+    auto hex_coord = transport_ptr->getHex()->getCoordinates();
+    auto transport_pos = cube_to_hex_center(hex_coord);
+
+    auto graphic_transport = new GraphicTransport(transport_ptr);
+    scene->addItem(graphic_transport);
+    graphic_transport->setPos(board_scale*transport_pos.first, board_scale*transport_pos.second);
+
+    graphic_transport_list.insert(transport_id, graphic_transport);
+
+    connect(graphic_transport, SIGNAL(transport_is_moved(int, QPointF, QPointF)), this, SLOT(transport_is_moved(int, QPointF, QPointF)));
+    connect(this, SIGNAL(set_transport_movement(bool)), graphic_transport, SLOT(allow_movement(bool)));
 
 }
 
@@ -183,21 +224,22 @@ void HexBoard::animFinished()
 void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
 {
     // calculate vertex coordinates
-    QVector<QPointF> vertex = cube_to_hex_vertex(hex_ptr->getCoordinates());
-    if (hex_ptr->getActorTypes().size()>0)
-    {
-        std::cerr << "actor type: " << hex_ptr->getActorTypes()[0] << "\n";
-    }
-    if (hex_ptr->getTransports().size()>0)
-    {
-        std::cerr << "exist transport\n";
-    }
+    QPointF pos = cube_to_hex_pos(hex_ptr->getCoordinates());
+
+    QVector<QPointF> vertices;
+    vertices << QPointF(3.0, 0.0)*board_scale;
+    vertices << QPointF(6.0, 2.0)*board_scale;
+    vertices << QPointF(6.0, 5.0)*board_scale;
+    vertices << QPointF(3.0, 7.0)*board_scale;
+    vertices << QPointF(0.0, 5.0)*board_scale;
+    vertices << QPointF(0.0, 2.0)*board_scale;
 
     // create graphic_hex object
-    GraphicHex* graphic_hex = new GraphicHex(hex_ptr, vertex, id);
+    GraphicHex* graphic_hex = new GraphicHex(hex_ptr, vertices, id);
 
     // add graphic_hex to scene
     scene->addItem(graphic_hex);
+    graphic_hex->setPos(pos);
 
     // add to list of graphic hex
     graphic_hex_list.insert(id, graphic_hex);
@@ -205,7 +247,7 @@ void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
     connect(graphic_hex, SIGNAL(clicked(int)), this, SLOT(hex_clicked(int)));
 }
 
-// populate main window based on data from game_board, TODO add pawn and actors part
+// populate main window based on data from game_board, TODO add boat
 void HexBoard::populate()
 {
     // add hex
@@ -216,19 +258,37 @@ void HexBoard::populate()
         hex_id += 1;
     }
 
+    // add boats
+    for (auto it : *(game_board->getTransportList()))
+    {
+        int transport_id = it.first;
+        auto transport_ptr = it.second.first;
+        add_transport(transport_id, transport_ptr);
+    }
+
     // add pawns
     for (auto it: *(game_board->getPawnList()))
     {
         int pawn_id = it.first;
         auto pawn_ptr = it.second.first;
-
-        std::cerr << "adding pawn \n";
         add_pawn(pawn_id, pawn_ptr);
     }
 
-    GraphicActor* actor = new GraphicActor(nullptr, nullptr);
-    scene->addItem(actor);
-    actor->setPos(300,300);
+    // activate pawns of current player
+    for (auto pawn_it=graphic_pawn_list.begin(); pawn_it!=graphic_pawn_list.end(); pawn_it++)
+    {
+        if (pawn_it.value()->get_pawn()->getPlayerId() == game_state->currentPlayer())
+        {
+            current_player_pawn_list.push_back(pawn_it.key());
+        }
+    }
+
+    emit(set_pawn_movement(true, current_player_pawn_list));
+}
+
+double HexBoard::euclidean_distance(std::pair<double, double> x, std::pair<double, double> y)
+{
+    return std::pow(x.first - y.first, 2) + std::pow(x.second - y.second, 2);
 }
 
 // convert cube coordinate to 2D coordinate
@@ -238,6 +298,42 @@ std::pair<double, double> HexBoard::cube_to_hex_center(Common::CubeCoordinate co
     x = 3*coord.x - 3*coord.y + 67;
     y = 5*coord.x + 5*coord.y + 76.5;
     return std::make_pair(x,y);
+}
+
+Common::CubeCoordinate HexBoard::plane_to_cube(double x, double y)
+{
+    Common::CubeCoordinate output_pos;
+    double cy = (y - x - 9.5)/8.0;
+    double cx = y/5.0 - cy - 15.3;
+
+    std::vector<Common::CubeCoordinate> cubes;
+    std::vector<std::pair<double, double>> centers;
+
+    cubes.push_back(Common::CubeCoordinate(std::floor(cx), std::floor(cy), -std::floor(cx) -std::floor(cy)));
+    cubes.push_back(Common::CubeCoordinate(std::floor(cx), std::ceil(cy), -std::floor(cx) -std::ceil(cy)));
+    cubes.push_back(Common::CubeCoordinate(std::ceil(cx), std::floor(cy), -std::ceil(cx) -std::floor(cy)));
+    cubes.push_back(Common::CubeCoordinate(std::ceil(cx), std::ceil(cy), -std::ceil(cx) -std::ceil(cy)));
+
+    for (auto cube : cubes)
+    {
+        centers.push_back(cube_to_hex_center(cube));
+    }
+
+    auto pos = std::make_pair(x,y);
+    double min_dis = std::numeric_limits<double>::max();
+
+
+    for (unsigned int i=0; i<4; i++)
+    {
+        auto dist = euclidean_distance(pos, centers[i]);
+        if (dist < min_dis)
+        {
+            min_dis = dist;
+            output_pos = cubes[i];
+        }
+    }
+
+    return output_pos;
 }
 
 // convert cube coordinate to hex vertices coordinate
@@ -253,6 +349,13 @@ QVector<QPointF> HexBoard::cube_to_hex_vertex(Common::CubeCoordinate coord)
     vertex << board_scale*QPointF(center.first -3, center.second-1.5);
 
     return vertex;
+}
+
+QPointF HexBoard::cube_to_hex_pos(Common::CubeCoordinate coord)
+{
+    auto center = cube_to_hex_center(coord);
+    QPointF pos = QPointF((center.first - 3.0)*board_scale, (center.second-3.5)*board_scale);
+    return pos;
 }
 
 

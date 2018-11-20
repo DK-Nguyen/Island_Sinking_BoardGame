@@ -18,11 +18,14 @@ public:
                 QGraphicsItem* parent=nullptr);
 
     std::shared_ptr<Common::Pawn> get_pawn();
-    QGraphicsItem* get_parent();
-    void set_parent(QGraphicsItem* parent);
+    std::string getName();
+
+public slots:
+    void allow_movement(bool allowed, std::list<int> pawn_id);
 
 signals:
     void pawn_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -36,6 +39,7 @@ private:
     QBrush brush;
     std::string owner;
     QPointF old_pos;
+    bool movement_allowed;
 };
 
 

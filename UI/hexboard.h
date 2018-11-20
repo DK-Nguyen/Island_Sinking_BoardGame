@@ -7,6 +7,7 @@
 #include <graphichex.h>
 #include <graphicpawn.h>
 #include <graphicactor.h>
+#include <graphictransport.h>
 #include <gameengine.hh>
 #include <QVector>
 #include <QPointF>
@@ -38,6 +39,13 @@ public:
     std::shared_ptr<GameState> game_state;
     std::vector<std::shared_ptr<Common::IPlayer>> players;
     int board_scale, width, height;
+
+signals:
+    void set_pawn_movement(bool allowed, std::list<int> pawn_id);
+    void set_actor_movement(bool allowed, std::list<int> actor_id);
+    void set_transport_movement(bool allowed);
+    void change_stage();
+    void change_movement_left();
 
 
 public slots:
@@ -71,9 +79,16 @@ private:
     // key: pawn_id, value : GraphicPawn*
     QHash<int, GraphicPawn*> graphic_pawn_list;
 
+    // key: transport_id, value : GraphicTransport*
+    QHash<int, GraphicTransport*> graphic_transport_list;
+
+    // key: actor_id, value : GraphicActor*
+    QHash<int, GraphicActor*> graphic_actor_list;
+
     QHash<QString, int> pawn_vertices;
 
     QHash<QString, QColor> pawn_colors;
+    std::list<int> current_player_pawn_list;
 
 
     // add pawns to scene
@@ -91,18 +106,24 @@ private:
     // populate main window based on data from game_board
     void populate();
 
+    double euclidean_distance(std::pair<double, double> x, std::pair<double, double> y);
+
     // convert cube coordinate to hex vertices coordinate
     QVector<QPointF> cube_to_hex_vertex(Common::CubeCoordinate coord);
+
+    QPointF cube_to_hex_pos(Common::CubeCoordinate coord);
 
     // convert cube coordinate to 2D coordinate
     std::pair<double,double> cube_to_hex_center(Common::CubeCoordinate coord);
 
     // convert 2D coordinate to cube coordinate
-    Common::CubeCoordinate plane_to_cube(int x_pos, int y_pos);
+    Common::CubeCoordinate plane_to_cube(double x, double y);
 
     std::pair<double, double> generate_pawn_position(Common::CubeCoordinate coord);
 
     QColor get_pawn_color(std::string pawn_owner);
+
+
 
 };
 

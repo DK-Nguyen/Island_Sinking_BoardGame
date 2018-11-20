@@ -164,16 +164,20 @@ void ControlBoard::deactivate_play_button()
 void ControlBoard::update_current_turn()
 {
     current_turn->setPlainText(tr("Current Turn: ") + QString::fromUtf8(game_state->currentPlayerName().c_str()));
+    update();
     return;
 }
 void ControlBoard::update_stage()
 {
     stage->setPlainText(tr("Stage: ") + game_state->currentGamePhaseName());
+    update();
     return;
 }
 void ControlBoard::update_movement_left()
 {
     movement_left->setPlainText(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
+    std::cerr << "receive update signal for movement left: " << game_state->getActionsLeft() << "\n";
+    update();
     return;
 }
 void ControlBoard::update_point(std::vector<int> player_IDs)
@@ -185,6 +189,7 @@ void ControlBoard::update_point(std::vector<int> player_IDs)
         text->setPlainText(tr("• ") + player_name +
                            tr(": ") + QString::number(game_state->points->at(game_state->get_player_name(player_id))));
     }
+    update();
     return;
 }
 
@@ -200,6 +205,7 @@ void ControlBoard::update_top10()
         top10_txt[index]->setPlainText(player_data);
         index += 1;
     }
+    update();
 }
 
 void ControlBoard::initialize_points()

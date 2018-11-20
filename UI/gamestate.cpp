@@ -86,4 +86,16 @@ unsigned int GameState::getActionsLeft() const
     return actions;
 }
 
+void GameState::setActionsLeft(unsigned int amount)
+{
+    for (auto it : players_ptr)
+    {
+        if (it->getPlayerId() == currentPlayer())
+        {
+            it->setActionsLeft(amount);
+            break;
+        }
+    }
+}
+
 

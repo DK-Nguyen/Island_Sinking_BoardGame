@@ -34,6 +34,7 @@ public:
     void changePlayerTurn(int nextPlayer);
 
     unsigned int getActionsLeft() const;
+    void setActionsLeft(unsigned int amount);
 
     std::shared_ptr<std::unordered_map<std::string, int>> points;
     std::shared_ptr<std::vector<std::pair<std::string, int>>> top10;

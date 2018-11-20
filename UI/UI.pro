@@ -30,7 +30,8 @@ SOURCES += main.cc \
     button.cpp \
     configurationwindow.cpp \
     wheel.cpp \
-    closingwindow.cpp
+    closingwindow.cpp \
+    graphictransport.cpp
 
 HEADERS  += \
     gameboard.hh \
@@ -45,7 +46,8 @@ HEADERS  += \
     button.h \
     configurationwindow.h \
     wheel.h \
-    closingwindow.h
+    closingwindow.h \
+    graphictransport.h
 
 INCLUDEPATH += $$PWD/../GameLogic/Engine
 DEPENDPATH += $$PWD/../GameLogic/Engine

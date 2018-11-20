@@ -142,6 +142,11 @@ void GameBoard::addTransport(std::shared_ptr<Common::Transport> transport, Commo
         hex_ptr->addTransport(transport);
     }
 
+    if (transport->getHex()==nullptr)
+    {
+        transport->addHex(hex_ptr);
+    }
+
     GameBoard::transport_list->insert(std::make_pair(transport->getId(), std::make_pair(transport, hex_ptr)));
 }
 

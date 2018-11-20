@@ -26,6 +26,7 @@ public:
     QVector<QPointF> get_vertex();
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    std::string getName();
 
 protected:
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;

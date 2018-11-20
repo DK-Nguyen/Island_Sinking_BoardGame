@@ -84,6 +84,11 @@ void GraphicHex::mousePressEvent(QGraphicsSceneMouseEvent *event)
     emit clicked(id);
 }
 
+std::string GraphicHex::getName()
+{
+    return "hex";
+}
+
 void GraphicHex::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
      event->setAccepted(true);

@@ -16,14 +16,13 @@ GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
                          QGraphicsItem* parent)
     : QGraphicsPolygonItem (parent)
 {
-    setFlags(QGraphicsItem::ItemIsSelectable|
-             QGraphicsItem::ItemIsMovable);
 
     this->vertex = vertex;
     this->pawn_ptr = pawn_ptr;
     this->parent = parent;
     this->color = color;
     this->owner = owner;
+    this->movement_allowed = false;
 
     // create a polygon with vertex
     QPolygonF polygon(vertex);
@@ -45,14 +44,34 @@ std::shared_ptr<Common::Pawn> GraphicPawn::get_pawn()
     return pawn_ptr;
 }
 
-QGraphicsItem *GraphicPawn::get_parent()
+std::string GraphicPawn::getName()
 {
-    return parent;
+    return "pawn";
 }
 
-void GraphicPawn::set_parent(QGraphicsItem *parent)
+
+void GraphicPawn::allow_movement(bool allowed, std::list<int> pawn_id)
 {
-    this->parent = parent;
+    for (auto id : pawn_id)
+    {
+        if (id == pawn_ptr->getId())
+        {
+            movement_allowed = allowed;
+
+            if (allowed)
+            {
+                setFlags(QGraphicsItem::ItemIsSelectable|
+                         QGraphicsItem::ItemIsMovable);
+            }
+            else
+            {
+                setFlag(QGraphicsItem::ItemIsSelectable, false);
+                setFlag(QGraphicsItem::ItemIsMovable, false);
+            }
+
+            break;
+        }
+    }
 }
 
 void GraphicPawn::mousePressEvent(QGraphicsSceneMouseEvent *event)

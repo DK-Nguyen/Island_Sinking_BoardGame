@@ -34,7 +34,7 @@ GameBoard:
     - qt
   before_script:
     - mkdir -p coverage/UnitTests
-  script: 
+  script:
     - cd Tests/UnitTests/GameBoard/
     - ./bin/tst_gameboardtest
     - gcov *.gcno -r
@@ -43,7 +43,25 @@ GameBoard:
     paths:
       - "Tests/UnitTests/*/gameboard.*.gcov"
     expire_in: 2d
-  dependencies: 
+  dependencies:
+    - BuildUnitTests
+
+Gamestate:
+  stage: test
+  tags:
+    - qt
+  before_script:
+    - mkdir -p coverage/UnitTests
+  script:
+    - cd Tests/UnitTests/Gamestate/
+    - ./bin/tst_gamestatetest
+    - gcov *.gcno -r
+    #- cp gameboard.*.gcov ../../../coverage/UnitTests
+  artifacts:
+    paths:
+      - "Tests/UnitTests/*/gamestate.*.gcov"
+    expire_in: 2d
+  dependencies:
     - BuildUnitTests
 
 # Compile and prepare the source code for analysis.
@@ -58,7 +76,7 @@ PrepareAnalysis:
     - build-wrapper-linux-x86-64 --out-dir bw_output make clean all
     - make clean
   when: always
-  artifacts: 
+  artifacts:
     paths:
       - bw_output
     expire_in: 2d

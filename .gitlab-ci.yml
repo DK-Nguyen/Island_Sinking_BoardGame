@@ -46,23 +46,23 @@ GameBoard:
   dependencies:
     - BuildUnitTests
 
-Gamestate:
-  stage: test
-  tags:
-    - qt
-  before_script:
-    - mkdir -p coverage/UnitTests
-  script:
-    - cd Tests/UnitTests/Gamestate/
-    - ./bin/tst_gamestatetest
-    - gcov *.gcno -r
-    #- cp gameboard.*.gcov ../../../coverage/UnitTests
-  artifacts:
-    paths:
-      - "Tests/UnitTests/*/gamestate.*.gcov"
-    expire_in: 2d
-  dependencies:
-    - BuildUnitTests
+# Gamestate:
+#   stage: test
+#   tags:
+#     - qt
+#   before_script:
+#     - mkdir -p coverage/UnitTests
+#   script:
+#     - cd Tests/UnitTests/Gamestate/
+#     - ./bin/tst_gamestatetest
+#     - gcov *.gcno -r
+#     #- cp gameboard.*.gcov ../../../coverage/UnitTests
+#   artifacts:
+#     paths:
+#       - "Tests/UnitTests/*/gamestate.*.gcov"
+#     expire_in: 2d
+#   dependencies:
+#     - BuildUnitTests
 
 # Compile and prepare the source code for analysis.
 # The output is stored in directory bw_output

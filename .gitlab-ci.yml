@@ -50,11 +50,9 @@ Gamestate:
   stage: test
   tags:
     - qt
-  before_script:
-    - mkdir -p coverage/UnitTests
   script:
     - cd Tests/UnitTests/Gamestate/
-    - ./tst_gamestatetest
+    - ./bin/tst_gamestatetest
   dependencies:
     - BuildUnitTests
 

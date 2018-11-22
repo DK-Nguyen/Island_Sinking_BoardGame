@@ -61,7 +61,7 @@ signals:
 
 
 public slots:
-    // receive click signal from hex object and perform hex flipping if valid
+    // receive click signal from GraphicHex object and perform hex flipping if valid
     void hex_clicked(int id);
 
     // receive click signal from wheel
@@ -78,6 +78,7 @@ public slots:
 
 
 private slots:
+    // functionality to perform zooming
     void scalingTime(qreal x);
     void animFinished();
 
@@ -88,27 +89,37 @@ private:
     void wheelEvent(QWheelEvent * event);
     int wheel_schedule=10;
 
-    // key: graphic_hex_id, value: GraphicHex*
+    // hash table to query GraphicHex based on ID -> key: graphic_hex_id, value: GraphicHex*
     QHash<int, GraphicHex*> graphic_hex_list;
 
-    // key: pawn_id, value : GraphicPawn*
+    // hash table to query GraphicPawn based on ID -> key: pawn_id, value : GraphicPawn*
     QHash<int, GraphicPawn*> graphic_pawn_list;
 
-    // key: transport_id, value : GraphicTransport*
+    // hash table to query GraphicTransport based on ID -> key: transport_id, value : GraphicTransport*
     QHash<int, GraphicTransport*> graphic_transport_list;
 
-    // key: actor_id, value : GraphicActor*
+    // hash table to query GraphicActor based on ID -> key: actor_id, value : GraphicActor*
     QHash<int, GraphicActor*> graphic_actor_list;
 
+    // hash table to keep track of initial pawn vertices
     QHash<QString, int> pawn_vertices;
 
+    // hash table to query pawn color based on player's name
     QHash<QString, QColor> pawn_colors;
+
+    // list of pawn ID of current player, used to emit signal that enable pawn movement
     std::list<int> current_player_pawn_list;
 
+    // hash table to query graphical data on each hex -> key: CubeCoorindate in string, value HexData struct
     std::unordered_map<std::string, HexData> data_map;
 
+    // variable to keep track of actor ID, used to create new actor when tile is flipped
     int current_actor_id;
+
+    // variable to keep track of transport ID, used to create new transport when tile is flipped
     int current_transport_id;
+
+    // keep current wheel output
     std::pair<std::string, std::string> wheel_output_;
 
 
@@ -124,40 +135,58 @@ private:
     // add hex to scene
     void add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id);
 
-    // populate main window based on data from game_board
+    // populate hex board based on game board
     void populate();
 
+    // calculate euclidean distance between two points on 2D plane
     double euclidean_distance(std::pair<double, double> x, std::pair<double, double> y);
 
+    // calculate 2D coorindate of hex object: coordinate indicating top left corner of hex bounding box
     QPointF cube_to_hex_pos(Common::CubeCoordinate coord);
 
-    // convert cube coordinate to 2D coordinate
+    // convert cube coordinate to 2D coordinate of hex center
     std::pair<double,double> cube_to_hex_center(Common::CubeCoordinate coord);
 
     // convert 2D coordinate to cube coordinate
     Common::CubeCoordinate plane_to_cube(double x, double y);
 
+    // calculate initial pawn position on the scene
     std::pair<double, double> generate_pawn_position(Common::CubeCoordinate coord);
 
+    // get pawn color according to player's name
     QColor get_pawn_color(std::string pawn_owner);
 
+    // check if pawn is graphically on transport
     bool is_pawn_on_transport(QPointF pawn_pos, GraphicTransport* transport);
 
+    // change to next player given current player id
     void change_player_turn(int player_id);
+
+    // update if there is eliminated player
     void update_existing_player();
 
+    // perform action of vortex (grahic and backend)
     void do_vortex_action(int id);
+
+    // perform action of kraken (graphic and backend)
     void do_kraken_action(int id);
+
+    // perform action of shark (graphic and backend)
     void do_shark_action(int id);
+
+    // perform action of seamunster (graphic and backend)
     void do_seamunster_action(int id);
 
-
+    // convert cube coorindate to string as key to hash table
     std::string cube_to_string(Common::CubeCoordinate coord);
 
+    // remove graphic data, given the flag
     void remove_data(HexData& data, bool pawn, bool transport, bool actor);
 
+    // enable current player's pawn movement
     void enable_pawn_movement();
 
+    // disbale current player's pawn movement
     void disable_pawn_movement();
 
 };

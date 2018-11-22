@@ -106,10 +106,8 @@ if stage 2:
         - change stage to 3, update controlboard
         - enable wheel click
 
-
 TODO
 ----
-- logic modified, need to change implementation
 - verify logic versus implementation
 
 ***/
@@ -170,17 +168,6 @@ TODO
 
                 // perform action
                 do_vortex_action(current_actor_id);
-
-                // change game stage, change player's turn
-                game_state->changeGamePhase(Common::GamePhase(1));
-                emit(update_stage());
-
-                // change player turn
-                change_player_turn(game_state->currentPlayer());
-
-                // enable current player's pawns movement
-                enable_pawn_movement();
-
                 current_actor_id++;
 
             }
@@ -209,12 +196,10 @@ TODO
             }
 
             // if not vortex, change to stage 3, enable wheel click
-            if (flip_result.compare("vortex")!=0)
-            {
-                emit set_wheel_click(true);
-                game_state->changeGamePhase(Common::GamePhase(3));
-                emit update_stage();
-            }
+            emit set_wheel_click(true);
+            game_state->changeGamePhase(Common::GamePhase(3));
+            emit update_stage();
+
         }
     } catch (Common::IllegalMoveException exception) {
         std::cerr << "******EXCEPTION: " << exception.msg() << "\n";
@@ -315,24 +300,45 @@ if pawn is moved to new hex:
         - if pawn movement is not valid:
             - move back pawn to old position
         - if pawn movement is valid:
-            - move pawn in backend
-            - update move left in backend, controlboard
-            - if no move left:
-                - if island is sunk:
-                    - set to stage 3
-                    - enable wheel click
-                - if island is not sunk:
-                    - set to stage 2
-                    - enable hex click
-                - disable pawn movement
-                - clear current_player_pawn_list
-                - update stage in controlboard
+            - if pawn is moved to transport in new hex
+                - if transport in new hex is full
+                    - put pawn to old position
+                - if transport in new hex is not full
+                    - add graphic pawn to graphic transport
+                    - move pawn in backend
+                    - update move left in backend, controlboard
+                    - if no move left:
+                        - if island is sunk:
+                            - set to stage 3
+                            - enable wheel click
+                        - if island is not sunk:
+                            - set to stage 2
+                        - disable pawn movement
+                        - clear current_player_pawn_list
+                        - update stage in controlboard
+
+            - if pawn is not moved to transport in new hex
+                - move pawn in backend
+                - update move left in backend, controlboard
+                - if no move left:
+                    - if island is sunk:
+                        - set to stage 3
+                        - enable wheel click
+                    - if island is not sunk:
+                        - set to stage 2
+                        - enable hex click
+                    - disable pawn movement
+                    - clear current_player_pawn_list
+                    - update stage in controlboard
+
+            - if pawn was on transport in old hex and pawn is moved to new hex
+                - remove graphic pawn from graphic transport
+                - remove pawn from transport
+
 
 
  TODO:
- - handle moving out of transport
- - handling transitioning between stage
- - need to check actual implementation versus logic description
+ - check actual implementation versus logic description
 
  * ***/
 {
@@ -382,45 +388,141 @@ if pawn is moved to new hex:
     // if pawn is moved to another hex
     else
     {
-        int move_left = game_engine->checkPawnMovement(old_cube_pos, new_cube_pos, pawn_id);
-
-        // if move is not valid
-        if (move_left == -1)
+        // in Stage 3, pawn can only move within hex: set to old position
+        if (game_state->currentGamePhase()==3)
         {
             graphic_pawn_list[pawn_id]->setPos(old_pos);
-            update();
         }
 
-        // if move is valid
+        // in stage 1, pawn can move both within and out of hex
         else
         {
-            // move in backend
-            game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
-            game_state->setActionsLeft(move_left);
+            int move_left = game_engine->checkPawnMovement(old_cube_pos, new_cube_pos, pawn_id);
 
-            // emit change info in ControlBoard
-            emit(update_movement_left());
-
-            // if no move left afterwards
-            if (move_left == 0)
+            // if move is not valid: move back to old position
+            if (move_left == -1)
             {
-                // if island completely sunk
-                if (game_board->isIslandSunk())
+                graphic_pawn_list[pawn_id]->setPos(old_pos);
+            }
+
+            // if move is valid
+            else
+            {
+                bool moved_to_transport = false;
+                bool pawn_is_moved = false;
+
+                // check if pawn is moved to transport on new hex
+                for (auto it : data_map[cube_to_string(new_cube_pos)].transports)
                 {
-                    game_state->changeGamePhase(Common::GamePhase(3));
+
+                    // if pawn is moved to transport
+                    if (is_pawn_on_transport(new_pos, it))
+                    {
+                        moved_to_transport = true;
+
+                        // if transport is full, move back
+                        if (it->is_full())
+                        {
+                            graphic_pawn_list[pawn_id]->setPos(old_pos);
+                        }
+
+                        // if transport is not full, perform movement
+                        else
+                        {
+                            pawn_is_moved = true;
+
+                            // add graphic pawn to  graphic transport
+                            it->add_pawn(graphic_pawn_list[pawn_id]);
+
+                            // add pawn to transport in backend
+                            it->get_transport()->addPawn(graphic_pawn_list[pawn_id]->get_pawn());
+
+                            // perform movement in backend
+                            game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
+                            game_state->setActionsLeft(move_left);
+
+
+                            // emit change info in ControlBoard
+                            emit(update_movement_left());
+
+                            // if no move left afterwards
+                            if (move_left == 0)
+                            {
+                                // if island completely sunk
+                                if (game_board->isIslandSunk())
+                                {
+                                    game_state->changeGamePhase(Common::GamePhase(3));
+                                }
+
+                                // if not
+                                else
+                                {
+                                    game_state->changeGamePhase(Common::GamePhase(2));
+                                }
+
+                                // disable pawn movement
+                                disable_pawn_movement();
+
+                                // update game stage in control board
+                                emit(update_stage());
+                            }
+                        }
+                    }
                 }
 
-                // if not sunk
-                else
+                // if not moving to transport on new hex
+                if (!moved_to_transport)
                 {
-                    game_state->changeGamePhase(Common::GamePhase(2));
+                    pawn_is_moved = true;
+
+                    // move on backend
+                    game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
+                    game_state->setActionsLeft(move_left);
+
+                    // emit change info in ControlBoard
+                    emit(update_movement_left());
+
+                    // if no move left afterwards
+                    if (move_left == 0)
+                    {
+                        // if island completely sunk
+                        if (game_board->isIslandSunk())
+                        {
+                            game_state->changeGamePhase(Common::GamePhase(3));
+                        }
+
+                        // if not
+                        else
+                        {
+                            game_state->changeGamePhase(Common::GamePhase(2));
+                        }
+
+                        // disable pawn movement
+                        disable_pawn_movement();
+
+                        // update game stage in control board
+                        emit(update_stage());
+                    }
                 }
 
-                disable_pawn_movement();
-                emit(update_stage());
+                // check if pawn was on transport and has been moved to new hex, remove pawn from old transport
+                for (auto it : data_map[cube_to_string(old_cube_pos)].transports)
+                {
+                    // if pawn is moved out of transport
+                    if (is_pawn_on_transport(old_pos, it) && pawn_is_moved)
+                    {
+                        // remove graphic pawn from graphical transport
+                        it->remove_pawn(graphic_pawn_list[pawn_id]);
+
+                        // remove pawn from transport in backend
+                        it->get_transport()->removePawn(graphic_pawn_list[pawn_id]->get_pawn());
+                    }
+                }
             }
         }
     }
+
+    update();
 }
 
 void HexBoard::actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos)
@@ -428,10 +530,23 @@ void HexBoard::actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos)
 LOGIC
 -----
 
+Description: actor is moved only during 3rd stage, movement validity is checked using game engine
+
+if move is not valid:
+    - put back graphic actor to old position
+
+if move is valid:
+    - move actor in backend
+    - check type of actor and perform corresponding actions (e.g., do_shark_action(),...)
+    - do action function should handles both graphic and backend
+    - change game stage to 1
+    - change to next player
+    - update current_player_pawn_list
+    - update info on controlboard
+    - enable pawn movement
 
 TODO
 ----
-- write logic
 - write implementation
 - verify logic versus implementation
 
@@ -444,6 +559,11 @@ void HexBoard::transport_is_moved(int transport_id, QPointF old_pos, QPointF new
 /***
 LOGIC
 -----
+
+Description: perform transport movement and check if target position and surrounding hexes has actors that can
+destroy the transport or pawns on transport
+
+
 stage 1: both dolphin and boat can move
 stage 3: only dolphin can move
 
@@ -452,7 +572,10 @@ stage 3: only dolphin can move
 - if move is valid:
     - should return #move left
     - move graphic pawns on transport with direction new_pos - old_pos
-    - move backend pawns to new hex (should not use game_engine->movePawn() because this one check pawn movement validity, should use game_board->movePawn()
+    - move backend pawns to new hex (should not use game_engine->movePawn()
+      because this one checks pawn movement validity, should use game_board->movePawn()
+      THIS SHOULD BE HANDLE IN GAME ENGINE
+
     - call update to move left on controlboard
 
 - if dolphin:
@@ -469,7 +592,8 @@ stage 3: only dolphin can move
 - if stage 1:
     - if no move left:
         - if island is sunk: set to stage 3, update stage in controlboard, enable wheel click
-        - if island is not sunk: set to stage 2, enable hex click
+        - if island is not sunk: set to stage 2
+
 - if stage 3:
     - set to stage 1, update stage in controlboard
     - set to next player, update player turn in controlboard
@@ -501,8 +625,6 @@ TODO
     }
 
 }
-
-
 
 void HexBoard::add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr)
 // add graphic pawn

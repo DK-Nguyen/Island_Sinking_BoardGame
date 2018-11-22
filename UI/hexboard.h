@@ -16,6 +16,12 @@
 #include <player.hh>
 #include <QColor>
 
+struct HexData{
+    Common::CubeCoordinate coord;
+    std::list<GraphicActor*> actors;
+    std::list<GraphicTransport*> transports;
+    std::list<GraphicPawn*> pawns;
+};
 
 
 class HexBoard: public QGraphicsView{
@@ -40,26 +46,35 @@ public:
     std::vector<std::shared_ptr<Common::IPlayer>> players;
     int board_scale, width, height;
 
+    void clear();
+
 signals:
     void set_pawn_movement(bool allowed, std::list<int> pawn_id);
     void set_actor_movement(bool allowed, std::list<int> actor_id);
     void set_transport_movement(bool allowed);
-    void change_stage();
-    void change_movement_left();
+    void set_wheel_click(bool flag);
+    void update_stage();
+    void update_movement_left();
+    void update_player_turn();
+    void update_point(std::vector<int> IDs, std::vector<int> increment);
+    void game_over();
 
 
 public slots:
     // receive click signal from hex object and perform hex flipping if valid
     void hex_clicked(int id);
 
+    // receive click signal from wheel
+    void wheel_clicked(std::pair<std::string, std::string> wheel_output);
+
     // receive movement signal from GraphicPawn object and check if move is valid and act accordingly
     void pawn_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos);
 
     // receive movement signal from GraphicActor object and check if move is valid and act accordingly
-    void actor_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos);
+    void actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos);
 
     // receive movement signal from GraphicTransport object and check if move is valid and act accordingly
-    void transport_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos);
+    void transport_is_moved(int transport_id, QPointF old_pos, QPointF new_pos);
 
 
 private slots:
@@ -90,6 +105,12 @@ private:
     QHash<QString, QColor> pawn_colors;
     std::list<int> current_player_pawn_list;
 
+    std::unordered_map<std::string, HexData> data_map;
+
+    int current_actor_id;
+    int current_transport_id;
+    std::pair<std::string, std::string> wheel_output_;
+
 
     // add pawns to scene
     void add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr);
@@ -108,9 +129,6 @@ private:
 
     double euclidean_distance(std::pair<double, double> x, std::pair<double, double> y);
 
-    // convert cube coordinate to hex vertices coordinate
-    QVector<QPointF> cube_to_hex_vertex(Common::CubeCoordinate coord);
-
     QPointF cube_to_hex_pos(Common::CubeCoordinate coord);
 
     // convert cube coordinate to 2D coordinate
@@ -123,7 +141,24 @@ private:
 
     QColor get_pawn_color(std::string pawn_owner);
 
+    bool is_pawn_on_transport(QPointF pawn_pos, GraphicTransport* transport);
 
+    void change_player_turn(int player_id);
+    void update_existing_player();
+
+    void do_vortex_action(int id);
+    void do_kraken_action(int id);
+    void do_shark_action(int id);
+    void do_seamunster_action(int id);
+
+
+    std::string cube_to_string(Common::CubeCoordinate coord);
+
+    void remove_data(HexData& data, bool pawn, bool transport, bool actor);
+
+    void enable_pawn_movement();
+
+    void disable_pawn_movement();
 
 };
 

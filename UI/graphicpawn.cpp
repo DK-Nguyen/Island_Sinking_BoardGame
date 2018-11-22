@@ -11,13 +11,18 @@
 #include <iostream>
 
 GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
-                         QVector<QPointF> vertex,
+                         double scale,
                          QColor color, std::string owner,
                          QGraphicsItem* parent)
     : QGraphicsPolygonItem (parent)
 {
 
-    this->vertex = vertex;
+    QVector<QPointF> pawn_vertex;
+    pawn_vertex << QPointF(0,0)*scale;
+    pawn_vertex << QPointF(1,0)*scale;
+    pawn_vertex << QPointF(1,1)*scale;
+    pawn_vertex << QPointF(0,1)*scale;
+
     this->pawn_ptr = pawn_ptr;
     this->parent = parent;
     this->color = color;
@@ -25,7 +30,7 @@ GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
     this->movement_allowed = false;
 
     // create a polygon with vertex
-    QPolygonF polygon(vertex);
+    QPolygonF polygon(pawn_vertex);
 
     // draw the poly
     setPolygon(polygon);
@@ -48,7 +53,6 @@ std::string GraphicPawn::getName()
 {
     return "pawn";
 }
-
 
 void GraphicPawn::allow_movement(bool allowed, std::list<int> pawn_id)
 {

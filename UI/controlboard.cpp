@@ -142,6 +142,10 @@ void ControlBoard::wheel_clicked()
 
     emit animate_inner_wheel(inner_degree);
     emit animate_outter_wheel(outter_degree);
+    emit wheel_spin(wheel_output);
+
+    inner_wheel->set_click_action(false);
+    outter_wheel->set_click_action(false);
 }
 
 void ControlBoard::quit_game()
@@ -206,6 +210,12 @@ void ControlBoard::update_top10()
         index += 1;
     }
     update();
+}
+
+void ControlBoard::set_wheel_click(bool flag)
+{
+    inner_wheel->set_click_action(flag);
+    outter_wheel->set_click_action(flag);
 }
 
 void ControlBoard::initialize_points()

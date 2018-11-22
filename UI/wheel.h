@@ -15,6 +15,7 @@ public:
     ~Wheel();
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void set_click_action(bool flag);
 
 
 signals:
@@ -23,10 +24,14 @@ signals:
 public slots:
     void spin(int target_output);
 
+
 private:
     QPixmap image;
     int no_rotation, interval;
     bool has_clock_direction;
+
+
+    bool can_click;
 
     // spin animation
     void spin_animation(int degree, int target_degree);

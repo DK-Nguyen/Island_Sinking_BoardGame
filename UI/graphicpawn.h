@@ -12,7 +12,7 @@ class GraphicPawn: public QObject, public QGraphicsPolygonItem{
 public:
 
     GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
-                QVector<QPointF> vertex,
+                double scale,
                 QColor color,
                 std::string owner,
                 QGraphicsItem* parent=nullptr);
@@ -33,7 +33,6 @@ protected:
 
 private:
     std::shared_ptr<Common::Pawn> pawn_ptr;
-    QVector<QPointF> vertex;
     QGraphicsItem* parent;
     QColor color;
     QBrush brush;

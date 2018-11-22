@@ -8,6 +8,7 @@ Wheel::Wheel(QString filename, int no_rotation, int interval, bool has_clock_dir
     this->no_rotation = no_rotation;
     this->interval = interval;
     this->has_clock_direction = has_clock_direction;
+    this->can_click = false;
 
     image = QPixmap(filename);
     setPixmap(image);
@@ -22,7 +23,10 @@ Wheel::~Wheel()
 
 void Wheel::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    emit clicked();
+    if (can_click)
+    {
+        emit clicked();
+    }
 }
 
 void Wheel::spin(int target_degree)
@@ -47,6 +51,11 @@ void Wheel::spin(int target_degree)
     spin_animation(target_degree, target_degree + 360*5);
 
     return ;
+}
+
+void Wheel::set_click_action(bool flag)
+{
+    can_click = flag;
 }
 
 

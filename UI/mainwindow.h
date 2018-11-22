@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include "gameboard.hh"
@@ -34,9 +34,15 @@ public:
                QWidget* parent);
 
 
+signals:
+    void point_change(std::vector<int>);
+
 public slots:
     void quit_game();
     void initialize_game(Configuration config);
+    void update_point(std::vector<int> IDs, std::vector<int> increment);
+    void game_over();
+    void play_again();
 
 private:
     std::shared_ptr<Common::IGameRunner> game_runner;

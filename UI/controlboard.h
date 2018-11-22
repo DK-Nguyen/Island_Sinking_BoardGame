@@ -55,6 +55,8 @@ signals:
     void animate_inner_wheel(int target_degree); // signal caught by Wheel object
     void animate_outter_wheel(int target_degree);  // signal caught by Wheel object
     void control_board_close(); // signal caught by parent object
+    void wheel_spin(std::pair<std::string, std::string> wheel_output);
+
 
 public slots:
     void update_current_turn(); // allow parent to update current turn
@@ -62,6 +64,7 @@ public slots:
     void update_movement_left(); // allow parent to update movement left
     void update_point(std::vector<int> player_IDs); // allow parent to update points
     void update_top10();
+    void set_wheel_click(bool flag);
 
 private slots:
     void save_button_clicked(); // perform saving game & emit control_board_close() to parent & call close()

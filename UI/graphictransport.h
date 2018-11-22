@@ -1,28 +1,30 @@
 #ifndef GRAPHICTRANSPORT_H
 #define GRAPHICTRANSPORT_H
 
-#include <QGraphicsPixmapItem>
+#include <QGraphicsPolygonItem>
 #include<QVector>
 #include<QPointF>
 #include<transport.hh>
 #include "graphicpawn.h"
 
-class GraphicTransport: public QObject, public QGraphicsPixmapItem{
+class GraphicTransport: public QObject, public QGraphicsPolygonItem{
     Q_OBJECT
 public:
 
-    GraphicTransport(std::shared_ptr<Common::Transport> transport_ptr, QGraphicsItem* parent=nullptr);
+    GraphicTransport(std::shared_ptr<Common::Transport> transport_ptr, double scale, QGraphicsItem* parent=nullptr);
 
     QGraphicsItem* parent;
 
     std::shared_ptr<Common::Transport> get_transport();
-    std::string getName();
+    void add_pawn(GraphicPawn* pawn);
+    QList<GraphicPawn*> get_pawn_list();
+    bool is_full();
 
 public slots:
     void allow_movement(bool allowed);
 
 signals:
-    void transport_is_moved(int actor_id, QPointF old_pos, QPointF new_pos);
+    void transport_is_moved(int transport_id, QPointF old_pos, QPointF new_pos);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -37,7 +39,7 @@ private:
     std::shared_ptr<Common::Transport> transport_ptr;
     QPixmap image;
     QPointF old_pos;
-    QVector<GraphicPawn*> pawn_list;
+    QList<GraphicPawn*> pawn_list;
     bool movement_allowed;
 
 };

@@ -7,8 +7,8 @@
 #include <QDrag>
 
 
-GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_ptr, QGraphicsItem* parent)
-    : QGraphicsPixmapItem (parent)
+GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_ptr, double scale, QGraphicsItem* parent)
+    : QGraphicsPolygonItem(parent)
 {
 
     this->transport_ptr = transport_ptr;
@@ -16,18 +16,47 @@ GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_
     this->movement_allowed = false;
 
     auto transport_type = transport_ptr->getTransportType();
+    QVector<QPointF> vertices;
 
     if (transport_type.compare("boat")==0)
     {
-        image = QPixmap(":/Images/boat.png");
+
+        vertices << QPointF(0.5, 4.0)*scale;
+        vertices << QPointF(2.9, 4.0)*scale;
+        vertices << QPointF(2.9, 2.5)*scale;
+        vertices << QPointF(2.0, 3.25)*scale;
+        vertices << QPointF(2.9, 4.0)*scale;
+        vertices << QPointF(3.1, 4.0)*scale;
+        vertices << QPointF(3.1, 2.5)*scale;
+        vertices << QPointF(3.5, 3.25)*scale;
+        vertices << QPointF(3.1, 4.0)*scale;
+        vertices << QPointF(5.5, 4.0)*scale;
+        vertices << QPointF(5.5, 4.5)*scale;
+        vertices << QPointF(3.0, 6.5)*scale;
+        vertices << QPointF(0.5, 4.5)*scale;
     }
     else
     {
-        image = QPixmap(":/Images/dolphin.png");
+        vertices << QPointF(1.5, 4.0)*scale;
+        vertices << QPointF(2.0, 4.75)*scale;
+        vertices << QPointF(2.5, 4.0)*scale;
+        vertices << QPointF(4.0, 4.0)*scale;
+        vertices << QPointF(4.5, 4.5)*scale;
+        vertices << QPointF(4.0, 5.5)*scale;
+        vertices << QPointF(2.5, 5.5)*scale;
+        vertices << QPointF(2.0, 4.75)*scale;
+        vertices << QPointF(1.5, 5.5)*scale;
+
     }
 
-    setPixmap(image);
-    setScale(0.08);
+    QPolygonF poly(vertices);
+    setPolygon(poly);
+    setAcceptDrops(true);
+
+    QBrush brush;
+    brush.setStyle(Qt::SolidPattern);
+    brush.setColor(Qt::black);
+    setBrush(brush);
 }
 
 std::shared_ptr<Common::Transport> GraphicTransport::get_transport()
@@ -35,10 +64,30 @@ std::shared_ptr<Common::Transport> GraphicTransport::get_transport()
     return transport_ptr;
 }
 
-std::string GraphicTransport::getName()
+void GraphicTransport::add_pawn(GraphicPawn *pawn)
 {
-    return "transport";
+    pawn_list.append(pawn);
 }
+
+QList<GraphicPawn*> GraphicTransport::get_pawn_list()
+{
+    return pawn_list;
+}
+
+bool GraphicTransport::is_full()
+{
+    if (transport_ptr->getTransportType().compare("boat")==0 && pawn_list.size()<3)
+    {
+        return true;
+    }
+    if (transport_ptr->getTransportType().compare("dolpin")==0 && pawn_list.size()==0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 
 void GraphicTransport::allow_movement(bool allowed)
 {

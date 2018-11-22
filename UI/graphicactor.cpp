@@ -43,10 +43,12 @@ std::shared_ptr<Common::Actor> GraphicActor::get_actor()
     return actor_ptr;
 }
 
-std::string GraphicActor::getName()
+std::string GraphicActor::get_name()
 {
     return "actor";
 }
+
+
 
 void GraphicActor::allow_movement(bool allowed, std::list<int> actor_id)
 {

@@ -1,4 +1,4 @@
-#ifndef GRAPHICACTOR_H
+﻿#ifndef GRAPHICACTOR_H
 #define GRAPHICACTOR_H
 
 #include <QGraphicsPixmapItem>
@@ -15,7 +15,7 @@ public:
     QGraphicsItem* parent;
 
     std::shared_ptr<Common::Actor> get_actor();
-    std::string getName();
+    std::string get_name();
 
 signals:
     // notify HexBoard of actor movement-> HexBoard need to reset to old position if move is not valid

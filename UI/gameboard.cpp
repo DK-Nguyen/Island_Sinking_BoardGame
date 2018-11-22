@@ -220,5 +220,16 @@ std::string Student::GameBoard::coordToString(Common::CubeCoordinate coord) cons
 }
 
 
-
-
+bool Student::GameBoard::isIslandSunk()
+{
+    bool is_sunk = true;
+    for (auto hex : *hex_list)
+    {
+        if (!hex.second->isWaterTile())
+        {
+            is_sunk = false;
+            break;
+        }
+    }
+    return is_sunk;
+}

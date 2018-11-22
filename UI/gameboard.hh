@@ -40,6 +40,8 @@ public:
 
     void removeTransport(int id);
 
+    bool isIslandSunk();
+
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Common::Hex>>> getHexList();
     std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Pawn>, std::shared_ptr<Common::Hex>>>> getPawnList();
     std::shared_ptr<std::unordered_map<int, std::pair<std::shared_ptr<Common::Actor>, std::shared_ptr<Common::Hex>>>> getActorList();

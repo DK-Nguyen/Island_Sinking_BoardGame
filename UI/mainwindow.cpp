@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include <QDockWidget>
 #include <igamerunner.hh>
+#include <gameover.h>
 
 MainWindow::MainWindow(std::shared_ptr<std::vector<std::pair<std::string, int>>> top10,
                        QWidget *parent)
@@ -65,6 +66,32 @@ void MainWindow::initialize_game(Configuration config)
     construct_window();
 }
 
+void MainWindow::update_point(std::vector<int> IDs, std::vector<int> increment)
+{
+    for (unsigned int i=0; i< IDs.size(); i++)
+    {
+        (*points)[player_names->at(IDs[i])] += increment[i];
+    }
+
+    emit(point_change(IDs));
+
+    return;
+}
+
+void MainWindow::game_over()
+{
+    auto game_over_window = new GameOverWindow();
+    connect(game_over_window, SIGNAL(quit()), this, SLOT(quit_game()));
+    connect(game_over_window, SIGNAL(play_again()), this, SLOT(play_again()));
+    game_over_window->show();
+}
+
+void MainWindow::play_again()
+// clear old data and create new data again
+{
+
+}
+
 void MainWindow::construct_window()
 {
 
@@ -100,15 +127,19 @@ void MainWindow::construct_window()
     setLayout(layout);
 
     connect(control_board, SIGNAL(control_board_close()), this, SLOT(quit_game()));
-    connect(hex_board, SIGNAL(change_stage()), control_board, SLOT(update_stage()));
-    connect(hex_board, SIGNAL(change_movement_left()), control_board, SLOT(update_movement_left()));
-
+    connect(hex_board, SIGNAL(update_stage()), control_board, SLOT(update_stage()));
+    connect(hex_board, SIGNAL(update_movement_left()), control_board, SLOT(update_movement_left()));
+    connect(hex_board, SIGNAL(set_wheel_click(bool)), control_board, SLOT(set_wheel_click(bool)));
+    connect(this, SIGNAL(point_change(std::vector<int>)), control_board, SLOT(update_point(std::vector<int>)));
+    connect(hex_board, SIGNAL(update_point(std::vector<int>, std::vector<int>)), this, SLOT(update_point(std::vector<int>, std::vector<int>)));
+    connect(control_board, SIGNAL(wheel_spin(std::pair<std::string, std::string>)), hex_board, SLOT(wheel_clicked(std::pair<std::string, std::string>)));
+    connect(hex_board, SIGNAL(game_over()), this, SLOT(game_over()));
     this->show();
 }
 
 
 void MainWindow::quit_game()
-// TODO: handle cleanup before quiting
+// TODO: clear data from both controlboard and hexboard and backend data
 {
     close();
 }

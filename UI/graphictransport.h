@@ -17,6 +17,7 @@ public:
 
     std::shared_ptr<Common::Transport> get_transport();
     void add_pawn(GraphicPawn* pawn);
+    void remove_pawn(GraphicPawn* pawn);
     QList<GraphicPawn*> get_pawn_list();
     bool is_full();
 

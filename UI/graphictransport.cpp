@@ -69,6 +69,16 @@ void GraphicTransport::add_pawn(GraphicPawn *pawn)
     pawn_list.append(pawn);
 }
 
+void GraphicTransport::remove_pawn(GraphicPawn *pawn)
+{
+    auto it = pawn_list.begin();
+    while (it!= pawn_list.end() && (*it)->get_pawn()->getId() != pawn->get_pawn()->getId())
+    {
+        it++;
+    }
+    pawn_list.erase(it);
+}
+
 QList<GraphicPawn*> GraphicTransport::get_pawn_list()
 {
     return pawn_list;

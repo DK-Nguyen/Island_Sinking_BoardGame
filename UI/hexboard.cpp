@@ -103,18 +103,13 @@ if stage 2:
         - create new graphic actor/transport and add to backend, graphic
         - if vortex:
             - do_vortex_action
-            - change game stage to 1, update in controlboard
-            - change player turn, update in controlboard
-            - add pawn IDs of next player to current_player_pawn_list
-            - enable pawn movement of next player
-        - if not vortex:
-            - change stage to 3, update controlboard
-            - enable wheel click
+        - change stage to 3, update controlboard
+        - enable wheel click
 
 
 TODO
 ----
-
+- logic modified, need to change implementation
 - verify logic versus implementation
 
 ***/
@@ -352,8 +347,8 @@ if pawn is moved to new hex:
     {
         for (auto it : data_map[cube_to_string(old_cube_pos)].transports)
         {
-            // if pawn is moved onto transport
-            if (is_pawn_on_transport(new_pos, it))
+            // if pawn is moved from outside to transport
+            if (is_pawn_on_transport(new_pos, it) && !is_pawn_on_transport(old_pos, it))
             {
                 // full transport, move back to old pos
                 if (it->is_full())
@@ -367,6 +362,19 @@ if pawn is moved to new hex:
                     it->add_pawn(graphic_pawn_list[pawn_id]);
                     it->get_transport()->addPawn(graphic_pawn_list[pawn_id]->get_pawn());
                 }
+            }
+
+            // if pawn is moved out of transport
+            if (is_pawn_on_transport(old_pos, it) && !is_pawn_on_transport(new_pos, it))
+            {
+                // put to new position
+                graphic_pawn_list[pawn_id]->setPos(new_pos);
+
+                // remove from graphical transport
+                it->remove_pawn(graphic_pawn_list[pawn_id]);
+
+                // remove from backend
+                it->get_transport()->removePawn(graphic_pawn_list[pawn_id]->get_pawn());
             }
         }
     }
@@ -419,7 +427,6 @@ void HexBoard::actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos)
 /***
 LOGIC
 -----
-
 
 
 TODO
@@ -558,8 +565,12 @@ void HexBoard::add_actor(int actor_id, std::shared_ptr<Common::Actor> actor_ptr)
     {
         data_map[map_key].actors.push_back(graphic_actor);
     }
+
     graphic_actor_list.insert(actor_id, graphic_actor);
 
+    // connect signal
+    connect(graphic_actor, SIGNAL(actor_is_moved(int, QPointF, QPointF)), this, SLOT(actor_is_moved(int, QPointF, QPointF)));
+    connect(this, SIGNAL(set_actor_movement(bool, std::list<int>)), graphic_actor, SLOT(allow_movement(bool, std::list<int>)));
 }
 
 void HexBoard::add_transport(int transport_id, std::shared_ptr<Common::Transport> transport_ptr)
@@ -591,7 +602,6 @@ void HexBoard::add_transport(int transport_id, std::shared_ptr<Common::Transport
 
     connect(graphic_transport, SIGNAL(transport_is_moved(int, QPointF, QPointF)), this, SLOT(transport_is_moved(int, QPointF, QPointF)));
     connect(this, SIGNAL(set_transport_movement(bool)), graphic_transport, SLOT(allow_movement(bool)));
-
 }
 
 
@@ -1025,7 +1035,6 @@ void HexBoard::disable_pawn_movement()
 {
     emit(set_pawn_movement(false, current_player_pawn_list));
     current_player_pawn_list.clear();
-
 }
 
 void HexBoard::wheelEvent(QWheelEvent *event)

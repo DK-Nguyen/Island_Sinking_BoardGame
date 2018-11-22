@@ -53,6 +53,11 @@ Gamestate:
   script:
     - cd Tests/UnitTests/Gamestate/
     - ./bin/tst_gamestatetest
+    - gcov *.gcno -r
+  artifacts:
+    paths:
+      - "Tests/UnitTests/*/gamestate.*.gcov"
+    expire_in: 2d
   dependencies:
     - BuildUnitTests
 
@@ -88,6 +93,7 @@ PerformAnalysis:
   dependencies:
     - PrepareAnalysis
     - GameBoard
+    - Gamestate
 
 # Performs the normal analysis and sends results to SonarQube
 PerformBranchAnalysis:
@@ -104,3 +110,4 @@ PerformBranchAnalysis:
   dependencies:
     - PrepareAnalysis
     - GameBoard
+    - Gamestate

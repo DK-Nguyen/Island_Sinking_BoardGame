@@ -6,6 +6,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
+DESTDIR = bin
 
 TARGET = tst_gamestatetest
 
@@ -30,4 +31,5 @@ INCLUDEPATH += \
 
 DEPENDPATH += ../../../UI
 
-
+QMAKE_CXXFLAGS += --coverage
+QMAKE_LFLAGS += --coverage

@@ -16,6 +16,8 @@
 #include <player.hh>
 #include <QColor>
 
+const double ACTOR_SCALE = 0.02;
+
 struct HexData{
     Common::CubeCoordinate coord;
     std::list<GraphicActor*> actors;
@@ -110,6 +112,9 @@ private:
     // list of pawn ID of current player, used to emit signal that enable pawn movement
     std::list<int> current_player_pawn_list;
 
+    // list of currently movable actors
+    std::list<int> movable_actors;
+
     // hash table to query graphical data on each hex -> key: CubeCoorindate in string, value HexData struct
     std::unordered_map<std::string, HexData> data_map;
 
@@ -181,13 +186,17 @@ private:
     std::string cube_to_string(Common::CubeCoordinate coord);
 
     // remove graphic data, given the flag
-    void remove_data(HexData& data, bool pawn, bool transport, bool actor);
+    void remove_data(HexData& data, bool pawn, std::string transport_type, std::string actor_type);
 
     // enable current player's pawn movement
     void enable_pawn_movement();
 
     // disbale current player's pawn movement
     void disable_pawn_movement();
+
+    void change_stage(int stage);
+
+    void print_cube(Common::CubeCoordinate coord);
 
 };
 

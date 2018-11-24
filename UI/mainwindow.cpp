@@ -127,6 +127,7 @@ void MainWindow::construct_window()
     setLayout(layout);
 
     connect(control_board, SIGNAL(control_board_close()), this, SLOT(quit_game()));
+    connect(hex_board, SIGNAL(update_player_turn()), control_board, SLOT(update_current_turn()));
     connect(hex_board, SIGNAL(update_stage()), control_board, SLOT(update_stage()));
     connect(hex_board, SIGNAL(update_movement_left()), control_board, SLOT(update_movement_left()));
     connect(hex_board, SIGNAL(set_wheel_click(bool)), control_board, SLOT(set_wheel_click(bool)));

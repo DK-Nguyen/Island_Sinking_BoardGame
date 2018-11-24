@@ -126,6 +126,11 @@ void Student::GameBoard::addActor(std::shared_ptr<Common::Actor> actor, Common::
         hex_ptr->addActor(actor);
     }
 
+    if (actor->getHex()==nullptr)
+    {
+        actor->addHex(hex_ptr);
+    }
+
     GameBoard::actor_list->insert(std::make_pair(actor->getId(), std::make_pair(actor, hex_ptr)));
 }
 

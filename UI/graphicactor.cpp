@@ -35,7 +35,8 @@ GraphicActor::GraphicActor(std::shared_ptr<Common::Actor> actor_ptr, QGraphicsIt
     }
 
     setPixmap(image);
-    setScale(0.08);
+
+    setToolTip(QString::fromUtf8(actor_type.c_str()));
 }
 
 std::shared_ptr<Common::Actor> GraphicActor::get_actor()

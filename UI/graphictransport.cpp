@@ -15,6 +15,9 @@ GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_
     this->parent = parent;
     this->movement_allowed = false;
 
+    setFlag(QGraphicsItem::ItemIsSelectable, false);
+    setFlag(QGraphicsItem::ItemIsMovable, false);
+
     auto transport_type = transport_ptr->getTransportType();
     QVector<QPointF> vertices;
 
@@ -88,14 +91,14 @@ bool GraphicTransport::is_full()
 {
     if (transport_ptr->getTransportType().compare("boat")==0 && pawn_list.size()<3)
     {
-        return true;
+        return false;
     }
     if (transport_ptr->getTransportType().compare("dolpin")==0 && pawn_list.size()==0)
     {
-        return true;
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 
@@ -131,7 +134,7 @@ void GraphicTransport::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
     QPointF new_pos = this->scenePos();
-    emit transport_is_moved(0, old_pos, new_pos);
+    emit transport_is_moved(transport_ptr->getId(), old_pos, new_pos);
 }
 
 void GraphicTransport::dropEvent(QGraphicsSceneDragDropEvent *event)

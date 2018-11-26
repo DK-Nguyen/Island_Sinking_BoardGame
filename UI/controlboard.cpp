@@ -128,13 +128,13 @@ void ControlBoard::wheel_clicked()
 
     if (wheel_output.second.compare("1")==0)
     {
-        outter_degree = 270;
+        outter_degree = -90;
     }
     else if (wheel_output.second.compare("2")==0) {
         outter_degree = 0;
     }
     else if (wheel_output.second.compare("3")==0) {
-        outter_degree = 90;
+        outter_degree = 270;
     }
     else{
         outter_degree = 180;

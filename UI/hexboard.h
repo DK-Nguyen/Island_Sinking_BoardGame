@@ -127,6 +127,9 @@ private:
     // keep current wheel output
     std::pair<std::string, std::string> wheel_output_;
 
+    // keep track of hex centers on the board
+    std::list<std::pair<std::pair<double, double>, Common::CubeCoordinate>> hex_centers;
+
 
     // add pawns to scene
     void add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr);
@@ -197,6 +200,10 @@ private:
     void change_stage(int stage);
 
     void print_cube(Common::CubeCoordinate coord);
+
+    bool checkActorMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id);
+
+    bool checkTransportMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id);
 
 };
 

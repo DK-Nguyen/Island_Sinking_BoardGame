@@ -16,6 +16,10 @@ GraphicActor::GraphicActor(std::shared_ptr<Common::Actor> actor_ptr, QGraphicsIt
     actor_type = actor_ptr->getActorType();
     movement_allowed = false;
 
+    setFlag(QGraphicsItem::ItemIsSelectable, false);
+    setFlag(QGraphicsItem::ItemIsMovable, false);
+
+    std::cerr << "creating graphic " << actor_type << "\n";
 
     if (actor_type.compare("kraken")==0)
     {
@@ -90,5 +94,5 @@ void GraphicActor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
     QPointF new_pos = this->scenePos();
-    emit actor_is_moved(0, old_pos, new_pos);
+    emit actor_is_moved(actor_ptr->getId(), old_pos, new_pos);
 }

@@ -110,10 +110,12 @@ void Student::GameBoard::movePawn(int pawnId, Common::CubeCoordinate pawnCoord)
     }
     auto pawn_ptr = pawn_data.first;
     auto hex_ptr = pawn_data.second;
+
     pawn_ptr->setCoordinates(pawnCoord);
     hex_ptr->removePawn(pawn_ptr);
     auto new_hex_ptr = GameBoard::getHex(pawnCoord);
     new_hex_ptr->addPawn(pawn_ptr);
+    (*pawn_list)[pawnId].second = new_hex_ptr;
 }
 
 
@@ -149,6 +151,8 @@ void Student::GameBoard::moveActor(int actorId, Common::CubeCoordinate actorCoor
     actor_data.second->removeActor(actor_data.first);
     new_hex_ptr->addActor(actor_data.first);
     actor_data.first->move(new_hex_ptr);
+
+    (*actor_list)[actorId].second = new_hex_ptr;
 }
 
 void Student::GameBoard::removeActor(int actorId)
@@ -181,14 +185,22 @@ void Student::GameBoard::moveTransport(int id, Common::CubeCoordinate transport_
     auto transport_data = GameBoard::transport_list->at(id);
     auto hex_ptr = GameBoard::hex_list->find(GameBoard::coordToString(transport_coord));
     if (hex_ptr == GameBoard::hex_list->end()) {
-        // cannot find the hex (tile) for the new actorCoord
-        return; // actor stays in its place if the location doesn't exist
+        // cannot find the hex (tile) for the new transport coord
+        return; // transport stays in its place if the location doesn't exist
     }
     auto new_hex_ptr = GameBoard::hex_list->at(GameBoard::coordToString(transport_coord));
 
     transport_data.second->removeTransport(transport_data.first);
     new_hex_ptr->addTransport(transport_data.first);
     transport_data.first->move(new_hex_ptr);
+
+    (*transport_list)[id].second = new_hex_ptr;
+
+    // move pawns on transport
+    for (auto pawn : transport_data.first->getPawnsInTransport())
+    {
+        movePawn(pawn->getId(), transport_coord);
+    }
 }
 
 void Student::GameBoard::removeTransport(int id)

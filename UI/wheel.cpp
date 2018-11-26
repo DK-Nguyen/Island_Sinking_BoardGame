@@ -48,7 +48,7 @@ void Wheel::spin(int target_degree)
 
 
     setRotation(target_degree);
-    spin_animation(target_degree, target_degree + 360*5);
+    spin_animation(target_degree, target_degree + 360*no_rotation);
 
     return ;
 }

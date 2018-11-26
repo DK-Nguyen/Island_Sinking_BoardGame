@@ -1,4 +1,4 @@
-﻿#include "hexboard.h"
+#include "hexboard.h"
 #include <QGraphicsTextItem>
 #include <hex.hh>
 #include <graphichex.h>
@@ -136,6 +136,7 @@ TODO
         {
             // change color of graphic hex
             graphic_hex_list[id]->flip();
+            std::cerr << "hex type after flipping: " << graphic_hex->get_hex()->isWaterTile() << "\n";
 
             // create new actor/transport
             if (flip_result.compare("boat")==0)
@@ -175,7 +176,6 @@ TODO
                 auto vortex = std::make_shared<Common::Vortex>(current_actor_id);
                 game_board->addActor(vortex, graphic_hex->get_hex()->getCoordinates());
                 add_actor(current_actor_id, vortex);
-
 
                 // perform action
                 do_vortex_action(current_actor_id);
@@ -380,8 +380,17 @@ if pawn is moved to new hex:
     std::cerr << "pawn is moved\n";
 
     // get pawn 2D position
-    auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale+0.5, old_pos.ry()/board_scale+0.5);
-    auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale+0.5, new_pos.ry()/board_scale+0.5);
+    auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale + 0.5, old_pos.ry()/board_scale+ 0.5);
+    auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale + 0.5, new_pos.ry()/board_scale+ 0.5);
+
+    // if not moving to any hex
+    if (new_cube_pos == Common::CubeCoordinate(-1, -1, -1))
+    {
+        graphic_pawn_list[pawn_id]->setPos(old_pos);
+    }
+
+    print_cube(old_cube_pos);
+    print_cube(new_cube_pos);
 
     // moving within the same hex
     if (old_cube_pos == new_cube_pos)
@@ -433,6 +442,7 @@ if pawn is moved to new hex:
         else
         {
             int move_left = game_engine->checkPawnMovement(old_cube_pos, new_cube_pos, pawn_id);
+            std::cerr << "move left returned by checking movement: " << move_left << "\n";
 
             // if move is not valid: move back to old position
             if (move_left == -1)
@@ -453,11 +463,14 @@ if pawn is moved to new hex:
                     // if pawn is moved to transport
                     if (is_pawn_on_transport(new_pos, it))
                     {
+                        std::cerr << "pawn is moved to transport: " <<  it->get_transport()->getTransportType() << "\n";
+
                         moved_to_transport = true;
 
                         // if transport is full, move back
                         if (it->is_full())
                         {
+                            std::cerr << "transport is full, move back pawn to old position \n";
                             graphic_pawn_list[pawn_id]->setPos(old_pos);
                         }
 
@@ -474,7 +487,7 @@ if pawn is moved to new hex:
 
                             // perform movement in backend
                             game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
-                            game_state->setActionsLeft(move_left);
+                            //game_state->setActionsLeft(move_left);
 
 
                             // emit change info in ControlBoard
@@ -492,11 +505,12 @@ if pawn is moved to new hex:
                 // if not moving to transport on new hex
                 if (!moved_to_transport)
                 {
+                    std::cerr << "pawn isn't moved to transport \n";
                     pawn_is_moved = true;
 
                     // move on backend
                     game_engine->movePawn(old_cube_pos, new_cube_pos, pawn_id);
-                    game_state->setActionsLeft(move_left);
+                    //game_state->setActionsLeft(move_left);
 
                     // emit change info in ControlBoard
                     emit(update_movement_left());
@@ -516,6 +530,7 @@ if pawn is moved to new hex:
                         // if pawn is moved out of transport
                         if (is_pawn_on_transport(old_pos, it))
                         {
+                            std::cerr << "pawn was moved out of transport \n";
                             // remove graphic pawn from graphical transport
                             it->remove_pawn(graphic_pawn_list[pawn_id]);
 
@@ -566,24 +581,28 @@ TODO
 
     //
     auto actor = graphic_actor_list[actor_id];
-    auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale + ACTOR_SCALE*200/2, old_pos.ry()/board_scale + ACTOR_SCALE*200/2);
-    auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale + ACTOR_SCALE*200/2, new_pos.ry()/board_scale + ACTOR_SCALE*200/2);
 
+    auto old_hex = actor->get_actor()->getHex()->getCoordinates();
+
+    auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale+3, old_pos.ry()/board_scale + 3);
+    auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale+3, new_pos.ry()/board_scale + 3);
+
+    // if not moving to any hex
+    if (new_cube_pos == Common::CubeCoordinate(-1,-1,-1))
+    {
+        graphic_actor_list[actor_id]->setPos(old_pos);
+    }
 
     if (!(old_cube_pos == new_cube_pos))
     {
         std::cerr << "actor moved out of hex \n";
+        print_cube(old_hex);
         print_cube(old_cube_pos);
         print_cube(new_cube_pos);
 
-        try {
-            game_engine->checkActorMovement(old_cube_pos, new_cube_pos, actor->get_actor()->getId(), wheel_output_.second);
-        } catch (std::exception a){
-            std::cerr << "cannot check actor movement, error throw \n";
-        }
 
         // if move is valid
-        if (game_engine->checkActorMovement(old_cube_pos, new_cube_pos, actor->get_actor()->getId(), wheel_output_.second))
+        if (checkActorMovement(old_cube_pos, new_cube_pos, actor_id) && game_engine->checkActorMovement(old_cube_pos, new_cube_pos, actor_id, wheel_output_.second))
         {
             std::cerr << "actor movement is valid \n";
 
@@ -646,34 +665,22 @@ stage 3: only dolphin can move
     - return transport to old position
 - if move is valid:
     - should return #move left
+    - move in backend usign game engine
     - move graphic pawns on transport with direction new_pos - old_pos
-    - move backend pawns to new hex (should not use game_engine->movePawn()
-      because this one checks pawn movement validity, should use game_board->movePawn()
-      THIS SHOULD BE HANDLE IN GAME ENGINE
-
     - call update to move left on controlboard
 
-- if dolphin:
-    - if neighboring sea tiles has vortex:
-        - call do_vortex_action()
 - if boat:
     - if new hex has seamunster:
         - call do_seamunster_action()
     - if new hex has kraken:
         - call do_kraken_action()
-    - if new hex has shark:
-        - call do_shark_action()
 
 - if stage 1:
     - if no move left:
-        - if island is sunk: set to stage 3, update stage in controlboard, enable wheel click
-        - if island is not sunk: set to stage 2
+        change to stage 2
 
 - if stage 3:
-    - set to stage 1, update stage in controlboard
-    - set to next player, update player turn in controlboard
-    - add pawn_id of next player to current_player_pawn_list -> enable pawn movement
-    - clear wheel_output
+    change to stage 3
 
 TODO
 ----
@@ -686,19 +693,98 @@ TODO
     // get corresponding cube position
     auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale + 3.0, old_pos.ry()/board_scale + 5.0);
     auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale + 3.0, new_pos.ry()/board_scale + 5.0);
+    auto graphic_transport = graphic_transport_list[transport_id];
 
-    // if still in the same tile, move back
-    if (old_cube_pos == new_cube_pos)
+    std::cerr << "transport is moved \n";
+    print_cube(graphic_transport_list[transport_id]->get_transport()->getHex()->getCoordinates());
+    print_cube(old_cube_pos);
+    print_cube(new_cube_pos);
+
+    // if not moving to any hex
+    if (new_cube_pos == Common::CubeCoordinate(-1,-1,-1))
+    {
+        graphic_transport->setPos(old_pos);
+    }
+
+
+    bool can_move = true;
+
+    // if move to new hex
+    if (!(old_cube_pos == new_cube_pos))
+    {
+
+        // if satisfy additional constraint
+        if (checkTransportMovement(old_cube_pos, new_cube_pos, transport_id))
+        {
+            auto move_left = game_engine->checkTransportMovement(old_cube_pos, new_cube_pos, transport_id, wheel_output_.second);
+
+            // if invalid movement
+            if (move_left == -1)
+            {
+                can_move = false;
+            }
+
+            // if move is valid
+            else
+            {
+                // move backend in stage 1
+                if (game_state->currentGamePhase()==1)
+                {
+                    game_engine->moveTransport(old_cube_pos, new_cube_pos, transport_id);
+                    emit update_movement_left();
+                }
+
+                // move backend in stage 3
+                else
+                {
+                    game_engine->moveTransportWithSpinner(old_cube_pos, new_cube_pos, transport_id, wheel_output_.second);
+                }
+
+                // move graphic pawns
+                for (auto pawn : graphic_transport->get_pawn_list())
+                {
+                    pawn->setPos(pawn->scenePos() + new_pos - old_pos);
+                }
+
+                // perform action of actors in new hex
+                if (graphic_transport->get_transport()->getTransportType().compare("boat")==0)
+                {
+                    auto data = data_map[cube_to_string(new_cube_pos)];
+                    for (auto actor : data.actors)
+                    {
+                        if (actor->get_actor()->getActorType().compare("seamunster")==0)
+                        {
+                            do_seamunster_action(actor->get_actor()->getId());
+                        }
+
+                        else if (actor->get_actor()->getActorType().compare("kraken")==0)
+                        {
+                            do_kraken_action(actor->get_actor()->getId());
+                        }
+                    }
+
+                }
+
+                // if stage 1 and no move left
+                if (game_state->currentGamePhase()==1 && move_left==0)
+                {
+                    change_stage(2);
+                }
+
+                if (game_state->currentGamePhase()==3)
+                {
+                    change_stage(1);
+                }
+            }
+        }
+
+    }
+
+    // if cannot move, set to old position
+    if (!can_move)
     {
         graphic_transport_list[transport_id]->setPos(old_pos);
     }
-
-    // if move to new tile
-    else
-    {
-
-    }
-
 }
 
 void HexBoard::add_pawn(int pawn_id, std::shared_ptr<Common::Pawn> pawn_ptr)
@@ -813,6 +899,9 @@ void HexBoard::add_transport(int transport_id, std::shared_ptr<Common::Transport
 void HexBoard::add_hex(std::shared_ptr<Common::Hex> hex_ptr, int id)
 // add graphic hex to scene
 {
+    // add hex centers to list
+    hex_centers.push_back(std::make_pair(cube_to_hex_center(hex_ptr->getCoordinates()), hex_ptr->getCoordinates()));
+
     // calculate vertex coordinates
     QPointF pos = cube_to_hex_pos(hex_ptr->getCoordinates());
 
@@ -888,36 +977,23 @@ Common::CubeCoordinate HexBoard::plane_to_cube(double x, double y)
 // convert 2D coordinate to cube coorindate
 {
     Common::CubeCoordinate output_pos;
-    double cy = (y - x - 9.5)/8.0;
-    double cx = y/5.0 - cy - 15.3;
-
-    std::vector<Common::CubeCoordinate> cubes;
-    std::vector<std::pair<double, double>> centers;
-
-    cubes.push_back(Common::CubeCoordinate(std::floor(cx), std::floor(cy), -std::floor(cx) -std::floor(cy)));
-    cubes.push_back(Common::CubeCoordinate(std::floor(cx), std::ceil(cy), -std::floor(cx) -std::ceil(cy)));
-    cubes.push_back(Common::CubeCoordinate(std::ceil(cx), std::floor(cy), -std::ceil(cx) -std::floor(cy)));
-    cubes.push_back(Common::CubeCoordinate(std::ceil(cx), std::ceil(cy), -std::ceil(cx) -std::ceil(cy)));
-
-    for (auto cube : cubes)
-    {
-        centers.push_back(cube_to_hex_center(cube));
-    }
-
     auto pos = std::make_pair(x,y);
     double min_dis = std::numeric_limits<double>::max();
 
-
-    for (unsigned int i=0; i<4; i++)
+    for (auto center : hex_centers)
     {
-        auto dist = euclidean_distance(pos, centers[i]);
+        auto dist = euclidean_distance(pos, center.first);
         if (dist < min_dis)
         {
             min_dis = dist;
-            output_pos = cubes[i];
+            output_pos = center.second;
         }
     }
 
+    if (min_dis > 9)
+    {
+        output_pos = Common::CubeCoordinate(-1, -1, -1);
+    }
     return output_pos;
 }
 
@@ -1109,7 +1185,7 @@ void HexBoard::do_vortex_action(int id)
         remove_data(data, true, "boat", "shark");
         remove_data(data, false, "dolphin", "kraken");
         remove_data(data, false, "", "seamunster");
-        remove_data(data, false, "", "vortex");
+
     }
 
     std::cerr << "successfully remove data on neighboring hexes \n";
@@ -1152,8 +1228,7 @@ description: shark eats pawns on the hex
 LOGIC
 -----
 
-- remove graphical pawn
-- call doAction()
+- remove graphical and backend pawns and dolphin
 
 
 TODO
@@ -1168,7 +1243,7 @@ TODO
     auto data = data_map[cube_to_string(coord)];
 
     // destroy graphical and backend pawns
-    remove_data(data, true, "", "");
+    remove_data(data, true, "dolphin", "");
     std::cerr << "successfully remove pawns \n";
 }
 
@@ -1227,6 +1302,16 @@ void HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type,
                 increment.push_back(1);
             }
 
+            // remove pawn from transport on the same hex if pawn is on transport
+            for (auto transport : data.transports)
+            {
+                if (transport->get_transport()->isPawnInTransport(pawn_ptr->get_pawn()))
+                {
+                    transport->get_transport()->removePawn(pawn_ptr->get_pawn());
+                    transport->remove_pawn(pawn_ptr);
+                }
+            }
+
             // remove pawn from hex
             game_board->removePawn(pawn_ptr->get_pawn()->getId());
 
@@ -1236,6 +1321,7 @@ void HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type,
             {
                 graphic_pawn_list.erase(it);
             }
+
 
             // remove graphic pawn from scene
             scene->removeItem(pawn_ptr);
@@ -1410,6 +1496,94 @@ void HexBoard::change_stage(int stage)
 void HexBoard::print_cube(Common::CubeCoordinate coord)
 {
     std::cerr << "cube: " << coord.x << ", " << coord.y << ", " << coord.z << "\n";
+}
+
+bool HexBoard::checkActorMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id)
+/***
+Description: check actor movement validity, add additional constraint on actor movement
+
+LOGIC
+-----
+
+- if shark:
+    shark cannot go to hex with : boat, seamunster
+- if kraken:
+    kraken cannot go to hex with: seamunster
+- if seamunster:
+    cannot go to hex with: shark
+***/
+{
+    bool allowed = true;
+    auto graphic_actor = graphic_actor_list[id];
+
+    if (graphic_actor->get_actor()->getActorType().compare("shark")==0)
+    {
+        auto target_data = data_map[cube_to_string(new_pos)];
+        for (auto actor : target_data.actors)
+        {
+            if (actor->get_actor()->getActorType().compare("seamunster")==0)
+            {
+                allowed = false;
+                return allowed;
+            }
+        }
+
+        for (auto transport : target_data.transports)
+        {
+            if (transport->get_transport()->getTransportType().compare("boat")==0)
+            {
+                allowed = false;
+                return allowed;
+            }
+        }
+    }
+
+    if (graphic_actor->get_actor()->getActorType().compare("kraken")==0)
+    {
+        auto target_data = data_map[cube_to_string(new_pos)];
+        for (auto actor : target_data.actors)
+        {
+            if (actor->get_actor()->getActorType().compare("seamunster")==0)
+            {
+                allowed = false;
+                return allowed;
+            }
+        }
+    }
+
+    if (graphic_actor->get_actor()->getActorType().compare("seamunster")==0)
+    {
+        auto target_data = data_map[cube_to_string(new_pos)];
+        for (auto actor : target_data.actors)
+        {
+            if (actor->get_actor()->getActorType().compare("shark")==0)
+            {
+                allowed = false;
+                return allowed;
+            }
+        }
+    }
+
+    return allowed;
+}
+
+bool HexBoard::checkTransportMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id)
+/***
+Description: check transport movement, add additional constraint to check movement
+
+LOGIC
+-----
+if exist transport in target hex, movement is not allowed
+ ***/
+{
+    bool allowed = true;
+    auto target_data = data_map[cube_to_string(new_pos)];
+    if (target_data.transports.size() > 0)
+    {
+        allowed = false;
+    }
+
+    return allowed;
 }
 
 void HexBoard::wheelEvent(QWheelEvent *event)

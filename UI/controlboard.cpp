@@ -192,6 +192,7 @@ void ControlBoard::update_point(std::vector<int> player_IDs)
         auto text = points_txt[player_name];
         text->setPlainText(tr("• ") + player_name +
                            tr(": ") + QString::number(game_state->points->at(game_state->get_player_name(player_id))));
+        text->setTextWidth(-1);
     }
     update();
     return;
@@ -207,6 +208,7 @@ void ControlBoard::update_top10()
                               tr(": ") + QString::number(it.second);
 
         top10_txt[index]->setPlainText(player_data);
+        top10_txt[index]->setTextWidth(-1);
         index += 1;
     }
     update();

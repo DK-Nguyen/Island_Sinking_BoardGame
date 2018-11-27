@@ -383,9 +383,13 @@ if pawn is moved to new hex:
     auto old_cube_pos = plane_to_cube(old_pos.rx()/board_scale + 0.5, old_pos.ry()/board_scale+ 0.5);
     auto new_cube_pos = plane_to_cube(new_pos.rx()/board_scale + 0.5, new_pos.ry()/board_scale+ 0.5);
 
+    auto old_data = data_map[cube_to_string(old_cube_pos)];
+    auto new_data = data_map[cube_to_string(new_cube_pos)];
+
     // if not moving to any hex
     if (new_cube_pos == Common::CubeCoordinate(-1, -1, -1))
     {
+        std::cerr << "pawn is moved outside of the gameboard, invalid movement \n";
         graphic_pawn_list[pawn_id]->setPos(old_pos);
     }
 
@@ -398,7 +402,7 @@ if pawn is moved to new hex:
         for (auto it : data_map[cube_to_string(old_cube_pos)].transports)
         {
             // if pawn is moved from outside to transport
-            if (is_pawn_on_transport(new_pos, it) && !is_pawn_on_transport(old_pos, it))
+            if (is_pawn_on_transport(new_pos, it) && !it->get_transport()->isPawnInTransport(graphic_pawn_list[pawn_id]->get_pawn()))
             {
                 // full transport, move back to old pos
                 if (it->is_full())
@@ -409,14 +413,17 @@ if pawn is moved to new hex:
                 // if not full, add pawn to graphic transport and backend transport
                 else
                 {
+                    std::cerr << "pawn is moved onto transport \n";
                     it->add_pawn(graphic_pawn_list[pawn_id]);
                     it->get_transport()->addPawn(graphic_pawn_list[pawn_id]->get_pawn());
+                    it->allow_movement(true);
                 }
             }
 
             // if pawn is moved out of transport
             if (is_pawn_on_transport(old_pos, it) && !is_pawn_on_transport(new_pos, it))
             {
+                std::cerr << "pawn is moved out of transport \n";
                 // put to new position
                 graphic_pawn_list[pawn_id]->setPos(new_pos);
 
@@ -425,6 +432,7 @@ if pawn is moved to new hex:
 
                 // remove from backend
                 it->get_transport()->removePawn(graphic_pawn_list[pawn_id]->get_pawn());
+
             }
         }
     }
@@ -457,13 +465,13 @@ if pawn is moved to new hex:
                 bool pawn_is_moved = false;
 
                 // check if pawn is moved to transport on new hex
-                for (auto it : data_map[cube_to_string(new_cube_pos)].transports)
+                for (auto it : new_data.transports)
                 {
 
                     // if pawn is moved to transport
                     if (is_pawn_on_transport(new_pos, it))
                     {
-                        std::cerr << "pawn is moved to transport: " <<  it->get_transport()->getTransportType() << "\n";
+                        std::cerr << "pawn is moved to transport on new hex: " <<  it->get_transport()->getTransportType() << "\n";
 
                         moved_to_transport = true;
 
@@ -498,6 +506,10 @@ if pawn is moved to new hex:
                             {
                                 change_stage(2);
                             }
+                            else
+                            {
+                                it->allow_movement(true);
+                            }
                         }
                     }
                 }
@@ -505,7 +517,7 @@ if pawn is moved to new hex:
                 // if not moving to transport on new hex
                 if (!moved_to_transport)
                 {
-                    std::cerr << "pawn isn't moved to transport \n";
+                    std::cerr << "pawn isn't moved to transport on new hex\n";
                     pawn_is_moved = true;
 
                     // move on backend
@@ -522,15 +534,17 @@ if pawn is moved to new hex:
                     }
                 }
 
-                // check if pawn was on transport and has been moved to new hex, remove pawn from old transport
+
                 if (pawn_is_moved)
                 {
-                    for (auto it : data_map[cube_to_string(old_cube_pos)].transports)
+
+                    // check if pawn was on transport and has been moved to new hex, remove pawn from old transport
+                    for (auto it : old_data.transports)
                     {
                         // if pawn is moved out of transport
                         if (is_pawn_on_transport(old_pos, it))
                         {
-                            std::cerr << "pawn was moved out of transport \n";
+                            std::cerr << "pawn was moved out of transport, remove pawn from old transport\n";
                             // remove graphic pawn from graphical transport
                             it->remove_pawn(graphic_pawn_list[pawn_id]);
 
@@ -538,12 +552,16 @@ if pawn is moved to new hex:
                             it->get_transport()->removePawn(graphic_pawn_list[pawn_id]->get_pawn());
                         }
                     }
+
+                    // remove pawns on data map of old hex, add pawns to data map of new hex
+                    moveGraphicPawn(pawn_id, old_cube_pos, new_cube_pos);
                 }
             }
         }
     }
 
     update();
+    graphic_pawn_list[pawn_id]->setZValue(2);
 }
 
 void HexBoard::actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos)
@@ -590,6 +608,7 @@ TODO
     // if not moving to any hex
     if (new_cube_pos == Common::CubeCoordinate(-1,-1,-1))
     {
+        std::cerr << "actor is moved out of gameboard, move back to old position \n";
         graphic_actor_list[actor_id]->setPos(old_pos);
     }
 
@@ -634,6 +653,9 @@ TODO
 
             // change to stage 1
             change_stage(1);
+
+            // remove actor on data_map of old hex, add actor to data_map of new hex
+            moveGraphicActor(actor_id, old_cube_pos, new_cube_pos);
 
         }
 
@@ -710,7 +732,16 @@ TODO
     bool can_move = true;
 
     // if move to new hex
-    if (!(old_cube_pos == new_cube_pos))
+    if (old_cube_pos == new_cube_pos)
+    {
+        // move graphic pawns
+        for (auto pawn : graphic_transport->get_pawn_list())
+        {
+            std::cerr << "moving pawns on transport on the same hex \n";
+            pawn->setPos(pawn->scenePos() + new_pos - old_pos);
+        }
+    }
+    else
     {
 
         // if satisfy additional constraint
@@ -730,6 +761,7 @@ TODO
                 // move backend in stage 1
                 if (game_state->currentGamePhase()==1)
                 {
+                    std::cerr << "moving transport \n";
                     game_engine->moveTransport(old_cube_pos, new_cube_pos, transport_id);
                     emit update_movement_left();
                 }
@@ -740,10 +772,14 @@ TODO
                     game_engine->moveTransportWithSpinner(old_cube_pos, new_cube_pos, transport_id, wheel_output_.second);
                 }
 
+                moveGraphicTransport(transport_id, old_cube_pos, new_cube_pos);
+
                 // move graphic pawns
                 for (auto pawn : graphic_transport->get_pawn_list())
                 {
+                    std::cerr << "moving pawns on transport \n";
                     pawn->setPos(pawn->scenePos() + new_pos - old_pos);
+                    moveGraphicPawn(pawn->get_pawn()->getId(), old_cube_pos, new_cube_pos);
                 }
 
                 // perform action of actors in new hex
@@ -776,6 +812,10 @@ TODO
                     change_stage(1);
                 }
             }
+        }
+        else
+        {
+            can_move = false;
         }
 
     }
@@ -1171,21 +1211,26 @@ void HexBoard::do_vortex_action(int id)
     // destroy everything on current hex
 
     data = data_map[cube_to_string(hex->getCoordinates())];
-    remove_data(data, true, "boat", "shark");
-    remove_data(data, false, "dolphin", "kraken");
-    remove_data(data, false, "", "seamunster");
-    remove_data(data, false, "", "vortex");
+    data = remove_data(data, true, "boat", "shark");
+    data = remove_data(data, false, "dolphin", "kraken");
+    data = remove_data(data, false, "", "seamunster");
+    data = remove_data(data, false, "", "vortex");
+    data_map[cube_to_string(hex->getCoordinates())] = data;
 
     std::cerr << "successfully remove data on current hex \n";
 
-    // destroy everything on neighboring hexes
+    // destroy everything on neighboring water hexes
     for (auto neighbor_hex : neighbors)
     {
-        data = data_map[cube_to_string(neighbor_hex)];
-        remove_data(data, true, "boat", "shark");
-        remove_data(data, false, "dolphin", "kraken");
-        remove_data(data, false, "", "seamunster");
-
+        // check if water hex, destroy thing
+        if (game_board->getHex(neighbor_hex)->isWaterTile())
+        {
+            data = data_map[cube_to_string(neighbor_hex)];
+            data = remove_data(data, true, "boat", "shark");
+            data = remove_data(data, false, "dolphin", "kraken");
+            data = remove_data(data, false, "", "seamunster");
+            data_map[cube_to_string(neighbor_hex)] = data;
+        }
     }
 
     std::cerr << "successfully remove data on neighboring hexes \n";
@@ -1211,11 +1256,9 @@ TODO
 
     auto kraken = graphic_actor_list[id];
     auto coord = kraken->get_actor()->getHex()->getCoordinates();
-    auto data = data_map[cube_to_string(coord)];
-
 
     // destroy graphical boats
-    remove_data(data, false, "boat", "");
+    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], false, "boat", "");
 
     std::cerr << "successfully remove boat \n";
 
@@ -1240,10 +1283,9 @@ TODO
 
     auto shark = graphic_actor_list[id];
     auto coord = shark->get_actor()->getHex()->getCoordinates();
-    auto data = data_map[cube_to_string(coord)];
 
     // destroy graphical and backend pawns
-    remove_data(data, true, "dolphin", "");
+    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], true, "dolphin", "");
     std::cerr << "successfully remove pawns \n";
 }
 
@@ -1266,10 +1308,9 @@ TODO
     std::cerr << "do seamunster action \n";
     auto seamunster = graphic_actor_list[id];
     auto coord = seamunster->get_actor()->getHex()->getCoordinates();
-    auto data = data_map[cube_to_string(coord)];
 
     // destroy graphical and backend boats and pawns
-    remove_data(data, true, "boat", "");
+    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], true, "boat", "");
     std::cerr << "successfully remove boat and pawns \n";
 
 }
@@ -1280,7 +1321,7 @@ std::string HexBoard::cube_to_string(Common::CubeCoordinate coord)
     return std::to_string(coord.x) + "+" + std::to_string(coord.y) + "+" + std::to_string(coord.z);
 }
 
-void HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type, std::string actor_type)
+HexData HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type, std::string actor_type)
 // perform both graphic and backend data remove with given flags
 {
     // remove pawns
@@ -1307,18 +1348,21 @@ void HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type,
             {
                 if (transport->get_transport()->isPawnInTransport(pawn_ptr->get_pawn()))
                 {
+                    std::cerr << "removing pawn from transport \n";
                     transport->get_transport()->removePawn(pawn_ptr->get_pawn());
                     transport->remove_pawn(pawn_ptr);
                 }
             }
 
             // remove pawn from hex
+            std::cerr << "removing pawn on game board \n";
             game_board->removePawn(pawn_ptr->get_pawn()->getId());
 
             // remove pawn from graphic_pawn_list
             auto it = graphic_pawn_list.find(pawn_ptr->get_pawn()->getId());
             if (it != graphic_pawn_list.end())
             {
+                std::cerr << "removing graphic pawn \n";
                 graphic_pawn_list.erase(it);
             }
 
@@ -1422,6 +1466,8 @@ void HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type,
             data.actors.erase(it);
         }
     }
+
+    return data;
 }
 
 void HexBoard::enable_pawn_movement()
@@ -1438,10 +1484,36 @@ void HexBoard::enable_pawn_movement()
     emit(set_pawn_movement(true, current_player_pawn_list));
 }
 
+void HexBoard::enable_transport_movement()
+{
+    for (auto transport_it : graphic_transport_list)
+    {
+        for (auto pawn_id : current_player_pawn_list)
+        {
+            if (transport_it->get_transport()->isPawnInTransport(graphic_pawn_list[pawn_id]->get_pawn()))
+            {
+                movable_transports.push_back(transport_it->get_transport()->getId());
+                transport_it->allow_movement(true);
+            }
+        }
+    }
+}
+
+
+
 void HexBoard::disable_pawn_movement()
 {
     emit(set_pawn_movement(false, current_player_pawn_list));
     current_player_pawn_list.clear();
+}
+
+void HexBoard::disable_transport_movement()
+{
+    for (auto id : movable_transports)
+    {
+        graphic_transport_list[id]->allow_movement(false);
+    }
+    movable_transports.clear();
 }
 
 void HexBoard::change_stage(int stage)
@@ -1461,10 +1533,14 @@ void HexBoard::change_stage(int stage)
         // change stage
         game_state->changeGamePhase(Common::GamePhase(1));
         emit update_stage();
+
+        // enable transport movement
+        enable_transport_movement();
     }
 
     if (stage == 2)
     {
+        disable_transport_movement();
         // if island is not sunk
         if (!game_board->isIslandSunk())
         {
@@ -1584,6 +1660,65 @@ if exist transport in target hex, movement is not allowed
     }
 
     return allowed;
+}
+
+void HexBoard::moveGraphicPawn(int pawn_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos)
+{
+    auto old_data = data_map[cube_to_string(old_pos)];
+    auto new_data = data_map[cube_to_string(new_pos)];
+
+    int index = 0;
+    for (auto it : old_data.pawns)
+    {
+        if (it->get_pawn() == graphic_pawn_list[pawn_id]->get_pawn())
+        {
+            break;
+        }
+        index++;
+    }
+
+    auto it = old_data.pawns.begin();
+    advance(it, index);
+    old_data.pawns.erase(it);
+    data_map[cube_to_string(old_pos)] = old_data;
+
+    data_map[cube_to_string(new_pos)].pawns.push_back(graphic_pawn_list[pawn_id]);
+}
+
+void HexBoard::moveGraphicTransport(int transport_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos)
+{
+    int index = 0;
+    for (auto it : data_map[cube_to_string(old_pos)].transports)
+    {
+        if (it->get_transport() == graphic_transport_list[transport_id]->get_transport())
+        {
+            break;
+        }
+        index++;
+    }
+
+    auto it = data_map[cube_to_string(old_pos)].transports.begin();
+    advance(it, index);
+    data_map[cube_to_string(old_pos)].transports.erase(it);
+    data_map[cube_to_string(new_pos)].transports.push_back(graphic_transport_list[transport_id]);
+}
+
+void HexBoard::moveGraphicActor(int actor_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos)
+{
+    int index = 0;
+    for (auto it : data_map[cube_to_string(old_pos)].actors)
+    {
+        if (it->get_actor() == graphic_actor_list[actor_id]->get_actor())
+        {
+            break;
+        }
+        index++;
+    }
+
+    auto it = data_map[cube_to_string(old_pos)].actors.begin();
+    advance(it, index);
+    data_map[cube_to_string(old_pos)].actors.erase(it);
+    data_map[cube_to_string(new_pos)].actors.push_back(graphic_actor_list[actor_id]);
 }
 
 void HexBoard::wheelEvent(QWheelEvent *event)

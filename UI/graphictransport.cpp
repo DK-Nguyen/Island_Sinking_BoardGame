@@ -58,7 +58,7 @@ GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_
 
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
-    brush.setColor(Qt::black);
+    brush.setColor(Qt::white);
     setBrush(brush);
 }
 
@@ -89,6 +89,9 @@ QList<GraphicPawn*> GraphicTransport::get_pawn_list()
 
 bool GraphicTransport::is_full()
 {
+    std::cerr << "number of pawns on graphic transport: " << pawn_list.size() << "\n";
+    std::cerr << "number of pawns on backend transport: " << transport_ptr->getPawnsInTransport().size() << "\n";
+
     if (transport_ptr->getTransportType().compare("boat")==0 && pawn_list.size()<3)
     {
         return false;

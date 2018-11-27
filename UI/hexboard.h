@@ -115,6 +115,9 @@ private:
     // list of currently movable actors
     std::list<int> movable_actors;
 
+    // list of currently movable transport
+    std::list<int> movable_transports;
+
     // hash table to query graphical data on each hex -> key: CubeCoorindate in string, value HexData struct
     std::unordered_map<std::string, HexData> data_map;
 
@@ -189,13 +192,19 @@ private:
     std::string cube_to_string(Common::CubeCoordinate coord);
 
     // remove graphic data, given the flag
-    void remove_data(HexData& data, bool pawn, std::string transport_type, std::string actor_type);
+    HexData remove_data(HexData& data, bool pawn, std::string transport_type, std::string actor_type);
 
     // enable current player's pawn movement
     void enable_pawn_movement();
 
+    // enable transport movement that has current player's pawns
+    void enable_transport_movement();
+
     // disbale current player's pawn movement
     void disable_pawn_movement();
+
+    // disable transport movement
+    void disable_transport_movement();
 
     void change_stage(int stage);
 
@@ -204,6 +213,15 @@ private:
     bool checkActorMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id);
 
     bool checkTransportMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id);
+
+    // move graphic pawns on data_map
+    void moveGraphicPawn(int pawn_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos);
+
+    // move graphic transports on data_map
+    void moveGraphicTransport(int transport_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos);
+
+    // move graphic actor on data_map
+    void moveGraphicActor(int actor_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos);
 
 };
 

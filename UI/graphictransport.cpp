@@ -21,6 +21,8 @@ GraphicTransport::GraphicTransport(std::shared_ptr<Common::Transport> transport_
     auto transport_type = transport_ptr->getTransportType();
     QVector<QPointF> vertices;
 
+    setToolTip(QString::number(transport_ptr->getId()));
+
     if (transport_type.compare("boat")==0)
     {
 
@@ -96,7 +98,7 @@ bool GraphicTransport::is_full()
     {
         return false;
     }
-    if (transport_ptr->getTransportType().compare("dolpin")==0 && pawn_list.size()==0)
+    if (transport_ptr->getTransportType().compare("dolphin")==0 && pawn_list.size()==0)
     {
         return false;
     }

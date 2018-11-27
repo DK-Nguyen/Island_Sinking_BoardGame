@@ -453,7 +453,7 @@ if pawn is moved to new hex:
             std::cerr << "move left returned by checking movement: " << move_left << "\n";
 
             // if move is not valid: move back to old position
-            if (move_left == -1)
+            if (move_left < 0)
             {
                 graphic_pawn_list[pawn_id]->setPos(old_pos);
             }
@@ -747,10 +747,19 @@ TODO
         // if satisfy additional constraint
         if (checkTransportMovement(old_cube_pos, new_cube_pos, transport_id))
         {
-            auto move_left = game_engine->checkTransportMovement(old_cube_pos, new_cube_pos, transport_id, wheel_output_.second);
+            std::string moves;
+            if (game_state->currentGamePhase() == 1)
+            {
+                moves = std::to_string(game_state->getActionsLeft());
+            }
+            else
+            {
+                moves = wheel_output_.second;
+            }
+            auto move_left = game_engine->checkTransportMovement(old_cube_pos, new_cube_pos, transport_id, moves);
 
             // if invalid movement
-            if (move_left == -1)
+            if (move_left < 0)
             {
                 can_move = false;
             }
@@ -761,7 +770,7 @@ TODO
                 // move backend in stage 1
                 if (game_state->currentGamePhase()==1)
                 {
-                    std::cerr << "moving transport \n";
+                    std::cerr << "moving transport in stage 1\n";
                     game_engine->moveTransport(old_cube_pos, new_cube_pos, transport_id);
                     emit update_movement_left();
                 }
@@ -769,6 +778,7 @@ TODO
                 // move backend in stage 3
                 else
                 {
+                    std::cerr << "moving transport in stage 3 \n";
                     game_engine->moveTransportWithSpinner(old_cube_pos, new_cube_pos, transport_id, wheel_output_.second);
                 }
 
@@ -802,8 +812,12 @@ TODO
                 }
 
                 // if stage 1 and no move left
+                std::cerr << "current game phase: " << game_state->currentGamePhase() << "\n";
+                std::cerr << "move left: " << move_left << "\n";
                 if (game_state->currentGamePhase()==1 && move_left==0)
                 {
+                    std::cerr << "move left: " << move_left << "\n";
+                    std::cerr << "changing to stage 2 \n";
                     change_stage(2);
                 }
 
@@ -1486,10 +1500,13 @@ void HexBoard::enable_pawn_movement()
 
 void HexBoard::enable_transport_movement()
 {
+    std::cerr << "enabling transport movement \n";
     for (auto transport_it : graphic_transport_list)
     {
         for (auto pawn_id : current_player_pawn_list)
         {
+            std::cerr << "current player pawn id: " << pawn_id << "\n";
+            std::cerr << "transport id: " << transport_it->get_transport()->getId() << "\n";
             if (transport_it->get_transport()->isPawnInTransport(graphic_pawn_list[pawn_id]->get_pawn()))
             {
                 movable_transports.push_back(transport_it->get_transport()->getId());
@@ -1536,6 +1553,8 @@ void HexBoard::change_stage(int stage)
 
         // enable transport movement
         enable_transport_movement();
+
+        // disable wheel output
     }
 
     if (stage == 2)

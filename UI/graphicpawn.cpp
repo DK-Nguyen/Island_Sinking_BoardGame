@@ -39,7 +39,7 @@ GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
     brush.setColor(this->color);
     setBrush(brush);
 
-    setToolTip(QString::fromUtf8(this->owner.c_str()));
+    setToolTip(QString::fromUtf8(this->owner.c_str()) + tr(":") + QString::number(pawn_ptr->getId()));
 
 }
 

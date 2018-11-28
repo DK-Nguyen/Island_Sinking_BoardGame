@@ -23,6 +23,9 @@ const int HEXBOARD_SCALE = 5;
 const int WINDOW_WIDTH = HEXBOARD_WIDTH + 350 + 30;
 const int WINDOW_HEIGHT = HEXBOARD_HEIGHT + 30;
 
+struct Compare{
+  bool operator() (std::pair<std::string, int> x, std::pair<std::string, int> y) { return (x.second > y.second);}
+};
 
 
 class MainWindow: public QWidget
@@ -30,8 +33,7 @@ class MainWindow: public QWidget
     Q_OBJECT
 public:
 
-    MainWindow(std::shared_ptr<std::vector<std::pair<std::string, int>>> top10,
-               QWidget* parent);
+    MainWindow(QWidget* parent);
 
 
 signals:
@@ -58,7 +60,10 @@ private:
     Configuration config;
     std::vector<Common::CubeCoordinate> mountain_tiles;
 
-    void construct_window();
+    void constructWindow();
+    void loadTop10();
+    void saveTop10();
+    void clear();
 
 };
 

@@ -8,11 +8,7 @@
 #include <iostream>
 #include <closingwindow.h>
 
-ControlBoard::~ControlBoard()
-{
-    // TODO: implement destructor
-    return;
-}
+
 
 
 ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
@@ -99,6 +95,12 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     initialize_inner_wheel();
     initialize_outter_wheel();
 
+}
+
+void ControlBoard::clear()
+{
+    points_txt.clear();
+    top10_txt.clear();
 }
 
 void ControlBoard::save_button_clicked()
@@ -200,16 +202,15 @@ void ControlBoard::update_point(std::vector<int> player_IDs)
 
 void ControlBoard::update_top10()
 {
-    int index = 0;
-    for (auto it : *(game_state->top10))
+    auto top10 = *(game_state->top10);
+    for (auto i=0; i<top10.size(); i++)
     {
         QString player_data = tr("• ") +
-                              QString::fromUtf8(it.first.c_str()) +
-                              tr(": ") + QString::number(it.second);
+                              QString::fromUtf8(top10[i].first.c_str()) +
+                              tr(": ") + QString::number(top10[i].second);
+        top10_txt[i]->setPlainText(player_data);
+        top10_txt[i]->setTextWidth(-1);
 
-        top10_txt[index]->setPlainText(player_data);
-        top10_txt[index]->setTextWidth(-1);
-        index += 1;
     }
     update();
 }
@@ -248,11 +249,9 @@ void ControlBoard::initialize_top10()
 {
     auto pos = TOP10_POS*board_scale;
 
-    for (auto it : *(game_state->top10))
+    for (unsigned int i=0; i < 10; i++)
     {
-        QString player_data = tr("• ") +
-                              QString::fromUtf8(it.first.c_str()) +
-                              tr(": ") + QString::number(it.second);
+        QString player_data = "";
         auto text = new QGraphicsTextItem(player_data);
         text->adjustSize();
         text->setPos(pos);
@@ -263,6 +262,8 @@ void ControlBoard::initialize_top10()
         // keep pointers to text items
         top10_txt.push_back(text);
     }
+
+    update_top10();
 }
 
 void ControlBoard::initialize_inner_wheel()

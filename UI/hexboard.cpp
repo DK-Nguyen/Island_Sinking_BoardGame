@@ -87,7 +87,17 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> game_engine_ptr,
 void HexBoard::clear()
 // clear all data on HexBoard
 {
-
+    graphic_hex_list.clear();
+    graphic_actor_list.clear();
+    graphic_pawn_list.clear();
+    graphic_transport_list.clear();
+    pawn_vertices.clear();
+    pawn_colors.clear();
+    current_player_pawn_list.clear();
+    movable_actors.clear();
+    movable_transports.clear();
+    data_map.clear();
+    hex_centers.clear();
 }
 
 
@@ -1178,6 +1188,7 @@ void HexBoard::change_player_turn(int player_id)
 void HexBoard::update_existing_player()
 // update list of survived players
 {
+    std::cerr << "updating players is called \n";
     std::list<unsigned int> removed_players;
 
     // find player who has no pawn left
@@ -1194,6 +1205,7 @@ void HexBoard::update_existing_player()
         }
         if (pawn_left == 0)
         {
+            std::cerr << "player " << player->getPlayerId() << " has no pawn left \n";
             removed_players.push_back(i);
         }
     }

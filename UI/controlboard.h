@@ -49,7 +49,7 @@ public:
                  QWidget* parent);
 
 
-    ~ControlBoard();
+    void clear();
 
 signals:
     void animate_inner_wheel(int target_degree); // signal caught by Wheel object

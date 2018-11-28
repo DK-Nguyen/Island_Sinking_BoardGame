@@ -4,12 +4,14 @@
 #include <QDockWidget>
 #include <igamerunner.hh>
 #include <gameover.h>
+#include <QSettings>
 
-MainWindow::MainWindow(std::shared_ptr<std::vector<std::pair<std::string, int>>> top10,
-                       QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QWidget (parent)
 {
-    this->top10 = top10;
+    top10 = std::make_shared<std::vector<std::pair<std::string, int>>>();
+    loadTop10();
+
     mountain_tiles.push_back(Common::CubeCoordinate(0,1,-1));
     mountain_tiles.push_back(Common::CubeCoordinate(1,0,-1));
     mountain_tiles.push_back(Common::CubeCoordinate(1,-1,0));
@@ -37,7 +39,7 @@ void MainWindow::initialize_game(Configuration config)
         player_ptr->setActionsLeft(3);
         players.push_back(player_ptr);
         player_names->insert(std::make_pair(player_id, name.toUtf8().constData()));
-        points->insert(std::make_pair(name.toUtf8().constData(), 0));
+        points->insert(std::make_pair(name.toUtf8().constData(), config.no_pawn));
 
         for (auto i=0; i< config.no_pawn; i++)
         {
@@ -63,7 +65,7 @@ void MainWindow::initialize_game(Configuration config)
         game_board->addPawn(pawn_data.first, pawn_data.second, mountain_tiles[index]);
         pawn_count++;
     }
-    construct_window();
+    constructWindow();
 }
 
 void MainWindow::update_point(std::vector<int> IDs, std::vector<int> increment)
@@ -89,10 +91,14 @@ void MainWindow::game_over()
 void MainWindow::play_again()
 // clear old data and create new data again
 {
-
+    clear();
+    saveTop10();
+    top10->clear();
+    loadTop10();
+    initialize_game(config);
 }
 
-void MainWindow::construct_window()
+void MainWindow::constructWindow()
 {
 
     setFixedSize(WINDOW_WIDTH*BOARD_SCALE, WINDOW_HEIGHT*BOARD_SCALE);
@@ -138,10 +144,59 @@ void MainWindow::construct_window()
     this->show();
 }
 
+void MainWindow::loadTop10()
+{
+    QSettings settings;
+    QHash<QString, QVariant> top10_tmp;
+    top10_tmp = settings.value("top10", QVariant::fromValue(top10_tmp)).toHash();
+
+    for (auto it=top10_tmp.begin(); it!=top10_tmp.end(); it++)
+    {
+        top10->push_back(std::make_pair(it.key().toStdString(),it.value().toInt()));
+    }
+}
+
+void MainWindow::saveTop10()
+{
+    for (auto it: *points)
+    {
+        top10->push_back(it);
+    }
+
+    auto compare_operator = Compare();
+
+    std::sort(top10->begin(), top10->end(), compare_operator);
+
+    std::vector<std::pair<std::string, int>> new_top10;
+    for (auto i=0; i< top10->size() && i < 10; i++)
+    {
+        new_top10.push_back((*top10)[i]);
+    }
+
+    QSettings settings;
+    QHash<QString, QVariant> top10_tmp;
+    for (auto it : new_top10)
+    {
+        top10_tmp.insert(QString::fromUtf8(it.first.c_str()), QVariant::fromValue(it.second));
+    }
+
+    settings.setValue("top10", top10_tmp);
+}
+
+void MainWindow::clear()
+{
+    players.clear();
+    pawn_list.clear();
+    hex_board->clear();
+    control_board->clear();
+}
+
 
 void MainWindow::quit_game()
 // TODO: clear data from both controlboard and hexboard and backend data
 {
+    saveTop10();
+    clear();
     close();
 }
 

@@ -239,6 +239,8 @@ TODO
     {
         std::cerr << "******EXCEPTION: " << exception.msg() << "\n";
     }
+
+    update_existing_player();
 }
 
 void HexBoard::wheel_clicked(std::pair<std::string, std::string> wheel_output)
@@ -273,7 +275,9 @@ TODO
         // set graphic dolphin movable, also set current player's pawn on that hex movable
         for (auto transport : graphic_transport_list)
         {
-            if (transport->get_transport()->getTransportType().compare("dolphin")==0)
+            auto transport_ptr = transport->get_transport();
+
+            if (transport_ptr->getTransportType().compare("dolphin")==0 && transport_ptr->canMove(game_state->currentPlayer()))
             {
                 exist_character = true;
                 // set dolphin movable
@@ -677,6 +681,8 @@ TODO
         }
 
     }
+
+    update_existing_player();
 }
 
 void HexBoard::transport_is_moved(int transport_id, QPointF old_pos, QPointF new_pos)
@@ -1189,7 +1195,7 @@ void HexBoard::update_existing_player()
 // update list of survived players
 {
     std::cerr << "updating players is called \n";
-    std::list<unsigned int> removed_players;
+    std::vector<unsigned int> removed_players;
 
     // find player who has no pawn left
     for (unsigned int i=0; i < players.size(); i++)
@@ -1211,13 +1217,15 @@ void HexBoard::update_existing_player()
     }
 
     // remove player from vector of players
-    for (auto index : removed_players)
+    for (auto i=0; i < removed_players.size(); i++)
     {
-        players.erase(players.begin() + index);
+        std::cerr << "removing player " << players[i]->getPlayerId() << "\n";
+        players.erase(players.begin() + removed_players[i]-i);
     }
 
+    std::cerr << "number of players left: " << players.size() << "\n";
     // if only 1 player left, clear data and emit game over
-    if (players.size() <= 1)
+    if (players.size() < 2)
     {
         clear();
         emit game_over();
@@ -1236,12 +1244,11 @@ void HexBoard::do_vortex_action(int id)
 
     // destroy everything on current hex
 
-    data = data_map[cube_to_string(hex->getCoordinates())];
-    data = remove_data(data, true, "boat", "shark");
-    data = remove_data(data, false, "dolphin", "kraken");
-    data = remove_data(data, false, "", "seamunster");
-    data = remove_data(data, false, "", "vortex");
-    data_map[cube_to_string(hex->getCoordinates())] = data;
+    auto key = cube_to_string(hex->getCoordinates());
+    data_map[key] = remove_data(key, true, "boat", "shark");
+    data_map[key] = remove_data(key, false, "dolphin", "kraken");
+    data_map[key] = remove_data(key, false, "", "seamunster");
+    data_map[key] = remove_data(key, false, "", "vortex");
 
     std::cerr << "successfully remove data on current hex \n";
 
@@ -1251,11 +1258,10 @@ void HexBoard::do_vortex_action(int id)
         // check if water hex, destroy thing
         if (game_board->getHex(neighbor_hex)->isWaterTile())
         {
-            data = data_map[cube_to_string(neighbor_hex)];
-            data = remove_data(data, true, "boat", "shark");
-            data = remove_data(data, false, "dolphin", "kraken");
-            data = remove_data(data, false, "", "seamunster");
-            data_map[cube_to_string(neighbor_hex)] = data;
+            auto key = cube_to_string(neighbor_hex);
+            data_map[key] = remove_data(key, true, "boat", "shark");
+            data_map[key] = remove_data(key, false, "dolphin", "kraken");
+            data_map[key] = remove_data(key, false, "", "seamunster");
         }
     }
 
@@ -1284,7 +1290,7 @@ TODO
     auto coord = kraken->get_actor()->getHex()->getCoordinates();
 
     // destroy graphical boats
-    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], false, "boat", "");
+    data_map[cube_to_string(coord)] = remove_data(cube_to_string(coord), false, "boat", "");
 
     std::cerr << "successfully remove boat \n";
 
@@ -1311,7 +1317,7 @@ TODO
     auto coord = shark->get_actor()->getHex()->getCoordinates();
 
     // destroy graphical and backend pawns
-    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], true, "dolphin", "");
+    data_map[cube_to_string(coord)] = remove_data(cube_to_string(coord), true, "dolphin", "");
     std::cerr << "successfully remove pawns \n";
 }
 
@@ -1336,7 +1342,7 @@ TODO
     auto coord = seamunster->get_actor()->getHex()->getCoordinates();
 
     // destroy graphical and backend boats and pawns
-    data_map[cube_to_string(coord)] = remove_data(data_map[cube_to_string(coord)], true, "boat", "");
+    data_map[cube_to_string(coord)] = remove_data(cube_to_string(coord), true, "boat", "");
     std::cerr << "successfully remove boat and pawns \n";
 
 }
@@ -1347,9 +1353,10 @@ std::string HexBoard::cube_to_string(Common::CubeCoordinate coord)
     return std::to_string(coord.x) + "+" + std::to_string(coord.y) + "+" + std::to_string(coord.z);
 }
 
-HexData HexBoard::remove_data(HexData &data, bool pawn, std::string transport_type, std::string actor_type)
+HexData HexBoard::remove_data(std::string key, bool pawn, std::string transport_type, std::string actor_type)
 // perform both graphic and backend data remove with given flags
 {
+    auto data = data_map[key];
     // remove pawns
     if (pawn)
     {
@@ -1370,6 +1377,7 @@ HexData HexBoard::remove_data(HexData &data, bool pawn, std::string transport_ty
             }
 
             // remove pawn from transport on the same hex if pawn is on transport
+            std::cerr << "number of transport on tile: " << data.transports.size() << "\n";
             for (auto transport : data.transports)
             {
                 if (transport->get_transport()->isPawnInTransport(pawn_ptr->get_pawn()))
@@ -1396,7 +1404,6 @@ HexData HexBoard::remove_data(HexData &data, bool pawn, std::string transport_ty
             // remove graphic pawn from scene
             scene->removeItem(pawn_ptr);
 
-            // free memory of graphic pawn
             delete pawn_ptr;
         }
         // clear pawns from data
@@ -1406,17 +1413,16 @@ HexData HexBoard::remove_data(HexData &data, bool pawn, std::string transport_ty
         {
             emit(update_point(IDs, increment));
         }
-
-        // check if existing players change
-        update_existing_player();
     }
 
     // remove transport
     if (transport_type.compare("")!=0)
     {
+        std::cerr << "start removing transport \n";
+
         std::vector<unsigned int> indices;
         unsigned int increment = 0;
-
+        std::cerr << "number of transport on tile: " << data.transports.size() << "\n";
         for (auto transport_ptr : data.transports)
         {
             // if matching the type
@@ -1721,7 +1727,7 @@ void HexBoard::moveGraphicTransport(int transport_id, Common::CubeCoordinate old
     int index = 0;
     for (auto it : data_map[cube_to_string(old_pos)].transports)
     {
-        if (it->get_transport() == graphic_transport_list[transport_id]->get_transport())
+        if (it->get_transport()->getId() == graphic_transport_list[transport_id]->get_transport()->getId())
         {
             break;
         }
@@ -1736,20 +1742,29 @@ void HexBoard::moveGraphicTransport(int transport_id, Common::CubeCoordinate old
 
 void HexBoard::moveGraphicActor(int actor_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos)
 {
+    auto old_data = data_map[cube_to_string(old_pos)];
+    auto new_data = data_map[cube_to_string(new_pos)];
+
     int index = 0;
-    for (auto it : data_map[cube_to_string(old_pos)].actors)
+    for (auto it : old_data.actors)
     {
-        if (it->get_actor() == graphic_actor_list[actor_id]->get_actor())
+        if (it->get_actor()->getId() == graphic_actor_list[actor_id]->get_actor()->getId())
         {
             break;
         }
         index++;
     }
 
-    auto it = data_map[cube_to_string(old_pos)].actors.begin();
+    auto it = old_data.actors.begin();
     advance(it, index);
-    data_map[cube_to_string(old_pos)].actors.erase(it);
-    data_map[cube_to_string(new_pos)].actors.push_back(graphic_actor_list[actor_id]);
+    old_data.actors.erase(it);
+    data_map[cube_to_string(old_pos)] = old_data;
+
+    new_data.actors.push_back(graphic_actor_list[actor_id]);
+
+    data_map[cube_to_string(new_pos)] = new_data;
+
+    return;
 }
 
 void HexBoard::wheelEvent(QWheelEvent *event)

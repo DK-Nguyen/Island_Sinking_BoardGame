@@ -82,9 +82,14 @@ void MainWindow::update_point(std::vector<int> IDs, std::vector<int> increment)
 
 void MainWindow::game_over()
 {
+    saveTop10();
     auto game_over_window = new GameOverWindow();
     connect(game_over_window, SIGNAL(quit()), this, SLOT(quit_game()));
     connect(game_over_window, SIGNAL(play_again()), this, SLOT(play_again()));
+    hex_board->clear();
+    hex_board->close();
+    control_board->clear();
+    control_board->close();
     game_over_window->show();
 }
 
@@ -92,7 +97,6 @@ void MainWindow::play_again()
 // clear old data and create new data again
 {
     clear();
-    saveTop10();
     top10->clear();
     loadTop10();
     initialize_game(config);
@@ -126,6 +130,11 @@ void MainWindow::constructWindow()
 //    QSizePolicy control_board_pol(QSizePolicy::Preferred, QSizePolicy::Preferred);
 //    control_board_pol.setHorizontalStretch(1);
 //    control_board->setSizePolicy(control_board_pol);
+
+    if (layout()!=0)
+    {
+        delete layout();
+    }
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(hex_board);
@@ -187,8 +196,6 @@ void MainWindow::clear()
 {
     players.clear();
     pawn_list.clear();
-    hex_board->clear();
-    control_board->clear();
 }
 
 
@@ -196,6 +203,10 @@ void MainWindow::quit_game()
 // TODO: clear data from both controlboard and hexboard and backend data
 {
     saveTop10();
+    hex_board->clear();
+    hex_board->close();
+    control_board->clear();
+    control_board->close();
     clear();
     close();
 }

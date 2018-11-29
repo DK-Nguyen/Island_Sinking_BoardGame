@@ -192,7 +192,7 @@ private:
     std::string cube_to_string(Common::CubeCoordinate coord);
 
     // remove graphic data, given the flag
-    HexData remove_data(HexData& data, bool pawn, std::string transport_type, std::string actor_type);
+    HexData remove_data(std::string key, bool pawn, std::string transport_type, std::string actor_type);
 
     // enable current player's pawn movement
     void enable_pawn_movement();

@@ -59,7 +59,7 @@ signals:
     void update_movement_left();
     void update_player_turn();
     void update_point(std::vector<int> IDs, std::vector<int> increment);
-    void game_over();
+    void game_over(std::string);
 
 
 public slots:

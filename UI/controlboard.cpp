@@ -62,18 +62,21 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     current_turn->setPos(TURN_POS*board_scale);
     scene->addItem(current_turn);
     current_turn->setScale(1.1*board_scale);
+    current_turn->setTextWidth(-1);
 
     stage = new QGraphicsTextItem(tr("Stage: ") + game_state->currentGamePhaseName());
     stage->adjustSize();
     stage->setPos(STAGE_POS*board_scale);
     scene->addItem(stage);
     stage->setScale(1.1*board_scale);
+    stage->setTextWidth(-1);
 
     movement_left = new QGraphicsTextItem(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
     movement_left->adjustSize();
     movement_left->setPos(ACTION_POS*board_scale);
     scene->addItem(movement_left);
     movement_left->setScale(1.1*board_scale);
+    movement_left->setTextWidth(-1);
 
     // handle statistics
 
@@ -82,6 +85,7 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     points_title->setPos(POINT_TT_POS*board_scale);
     scene->addItem(points_title);
     points_title->setScale(1.25*board_scale);
+    points_title->setTextWidth(-1);
     initialize_points();
 
     top10_title = new QGraphicsTextItem(tr("** TOP10 **"));
@@ -89,6 +93,7 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     top10_title->setPos(TOP10_TT_POS*board_scale);
     scene->addItem(top10_title);
     top10_title->setScale(1.25*board_scale);
+    top10_title->setTextWidth(-1);
     initialize_top10();
 
     // handle wheel

@@ -80,10 +80,10 @@ void MainWindow::update_point(std::vector<int> IDs, std::vector<int> increment)
     return;
 }
 
-void MainWindow::game_over()
+void MainWindow::game_over(std::string winner)
 {
     saveTop10();
-    auto game_over_window = new GameOverWindow();
+    auto game_over_window = new GameOverWindow(winner);
     connect(game_over_window, SIGNAL(quit()), this, SLOT(quit_game()));
     connect(game_over_window, SIGNAL(play_again()), this, SLOT(play_again()));
     hex_board->clear();
@@ -149,7 +149,7 @@ void MainWindow::constructWindow()
     connect(this, SIGNAL(point_change(std::vector<int>)), control_board, SLOT(update_point(std::vector<int>)));
     connect(hex_board, SIGNAL(update_point(std::vector<int>, std::vector<int>)), this, SLOT(update_point(std::vector<int>, std::vector<int>)));
     connect(control_board, SIGNAL(wheel_spin(std::pair<std::string, std::string>)), hex_board, SLOT(wheel_clicked(std::pair<std::string, std::string>)));
-    connect(hex_board, SIGNAL(game_over()), this, SLOT(game_over()));
+    connect(hex_board, SIGNAL(game_over(std::string)), this, SLOT(game_over(std::string)));
     this->show();
 }
 

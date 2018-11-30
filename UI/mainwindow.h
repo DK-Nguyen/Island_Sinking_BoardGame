@@ -43,7 +43,7 @@ public slots:
     void quit_game();
     void initialize_game(Configuration config);
     void update_point(std::vector<int> IDs, std::vector<int> increment);
-    void game_over();
+    void game_over(std::string winner);
     void play_again();
 
 private:

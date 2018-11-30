@@ -827,6 +827,19 @@ TODO
 
                 }
 
+                if (graphic_transport->get_transport()->getTransportType().compare("dolphin")==0)
+                {
+                    auto data = data_map[cube_to_string(new_cube_pos)];
+                    for (auto actor : data.actors)
+                    {
+                        if (actor->get_actor()->getActorType().compare("shark")==0)
+                        {
+                            do_shark_action(actor->get_actor()->getId());
+                        }
+                    }
+
+                }
+
                 // if stage 1 and no move left
                 std::cerr << "current game phase: " << game_state->currentGamePhase() << "\n";
                 std::cerr << "move left: " << move_left << "\n";
@@ -1225,10 +1238,15 @@ void HexBoard::update_existing_player()
 
     std::cerr << "number of players left: " << players.size() << "\n";
     // if only 1 player left, clear data and emit game over
-    if (players.size() < 2)
+    if (players.size()==1)
     {
         clear();
-        emit game_over();
+        emit game_over(game_state->get_player_name(players[0]->getPlayerId()));
+    }
+    else if (players.size()==0)
+    {
+        clear();
+        emit game_over("");
     }
 }
 

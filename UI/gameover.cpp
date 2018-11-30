@@ -4,9 +4,18 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-GameOverWindow::GameOverWindow(QWidget *parent): QDialog(parent)
+GameOverWindow::GameOverWindow(std::string winner, QWidget *parent): QDialog(parent)
 {
-    prompt = new QLabel("Do you want to play again?");
+    std::string msg;
+    if (winner.compare("")==0)
+    {
+        msg = "No one wins. Game's Over. Do you want to play again?";
+    }
+    else
+    {
+        msg = winner + " wins. Game's Over. Do you want to play again?";
+    }
+    prompt = new QLabel(QString::fromUtf8(msg.c_str()));
     play_again_button = new QPushButton("Play Again");
 
     connect(play_again_button, SIGNAL(clicked()), this, SLOT(play_again_clicked()));

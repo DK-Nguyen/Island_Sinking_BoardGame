@@ -11,7 +11,7 @@ class GameOverWindow: public QDialog
 {
     Q_OBJECT
 public:
-    GameOverWindow(QWidget* parent=nullptr);
+    GameOverWindow(std::string winner, QWidget* parent=nullptr);
 
     QLabel* prompt;
     QPushButton *play_again_button, *quit_button;

@@ -7,14 +7,15 @@
 #include <player.hh>
 #include <vector>
 
+namespace Student{
 class GameState : public Common::IGameState
 {
 public:
-    GameState(Common::GamePhase current_phase,
-              int current_player_id,
+    GameState(Common::GamePhase currentPhase,
+              int currentPlayerId,
               std::vector<std::shared_ptr<Common::IPlayer>> players,
-              std::shared_ptr<std::unordered_map<int, std::string>> player_names,
-              std::shared_ptr<std::unordered_map<std::string, int>> points,
+              std::shared_ptr<std::unordered_map<int, std::string>> playerNames,
+              std::shared_ptr<std::unordered_map<std::string, int>> points_,
               std::shared_ptr<std::vector<std::pair<std::string, int>>> top10);
 
     ~GameState();
@@ -25,7 +26,7 @@ public:
 
     std::string currentPlayerName() const;
 
-    std::string get_player_name(int player_id);
+    std::string getPlayerName(int playerId);
 
     QString currentGamePhaseName() const;
 
@@ -36,16 +37,16 @@ public:
     unsigned int getActionsLeft() const;
     void setActionsLeft(unsigned int amount);
 
-    std::shared_ptr<std::unordered_map<std::string, int>> points;
+    std::shared_ptr<std::unordered_map<std::string, int>> points_;
     std::shared_ptr<std::vector<std::pair<std::string, int>>> top10;
 
 private:
-    Common::GamePhase current_phase;
-    int current_player_id;
+    Common::GamePhase currentPhase_;
+    int currentPlayerId_;
     std::string current_player;
-    std::vector<std::shared_ptr<Common::IPlayer>> players_ptr;
-    std::shared_ptr<std::unordered_map<int, std::string>> player_names;
+    std::vector<std::shared_ptr<Common::IPlayer>> playersPtr_;
+    std::shared_ptr<std::unordered_map<int, std::string>> playerNames_;
 
 };
-
+}
 #endif // GAMESTATE_HH

@@ -5,6 +5,8 @@
 #include <QVBoxLayout>
 #include <QString>
 
+
+namespace UI{
 ConfigurationWindow::~ConfigurationWindow()
 {
     return;
@@ -14,76 +16,55 @@ ConfigurationWindow::ConfigurationWindow(QWidget* parent)
     : QDialog (parent)
 {
     // player name part
-    line_edit_lb = new QLabel(tr("Player names"));
-    line_edit = new QLineEdit();
-    line_edit_lb->setBuddy(line_edit);
+    lineEditLb_ = new QLabel(tr("Player names"));
+    lineEdit_ = new QLineEdit();
+    lineEditLb_->setBuddy(lineEdit_);
 
     // number of pawn
-    spinbox_lb = new QLabel(tr("Pawns per player"));
-    pawn_getter = new QSpinBox();
-    pawn_getter->setRange(1,3);
-    spinbox_lb->setBuddy(pawn_getter);
+    spinboxLb_ = new QLabel(tr("Pawns per player"));
+    pawnGetter_ = new QSpinBox();
+    pawnGetter_->setRange(1,3);
+    spinboxLb_->setBuddy(pawnGetter_);
 
-
-    // load button
-    load = new QPushButton(tr("Load..."));
-    load->setToolTip(tr("Load previously saved game"));
-    load->setEnabled(false);
-
-    // play button
-    play = new QPushButton(tr("Play"));
+    // play_ button
+    play_ = new QPushButton(tr("Play"));
 
     // quit button
-    quit = new QPushButton(tr("Quit"));
+    quit_ = new QPushButton(tr("Quit"));
 
     // perform layouting
     QHBoxLayout* top = new QHBoxLayout();
-    top->addWidget(line_edit_lb);
-    top->addWidget(line_edit);
+    top->addWidget(lineEditLb_);
+    top->addWidget(lineEdit_);
 
     QHBoxLayout* middle = new QHBoxLayout();
-    middle->addWidget(spinbox_lb);
-    middle->addWidget(pawn_getter);
+    middle->addWidget(spinboxLb_);
+    middle->addWidget(pawnGetter_);
 
     QHBoxLayout* bottom = new QHBoxLayout();
-    bottom->addWidget(load);
-    bottom->addWidget(play);
-    bottom->addWidget(quit);
+    bottom->addWidget(play_);
+    bottom->addWidget(quit_);
 
-    QVBoxLayout* main_layout = new QVBoxLayout();
-    main_layout->addLayout(top);
-    main_layout->addLayout(middle);
-    main_layout->addLayout(bottom);
-    setLayout(main_layout);
+    QVBoxLayout* mainLayout = new QVBoxLayout();
+    mainLayout->addLayout(top);
+    mainLayout->addLayout(middle);
+    mainLayout->addLayout(bottom);
+    setLayout(mainLayout);
 
     setWindowTitle(tr("Island Game Configuration"));
     setFixedHeight(sizeHint().height());
 
-
-    // connect signals and slots
-    connect(load, SIGNAL(clicked()), this, SLOT(load_from_file()));
-    connect(play, SIGNAL(clicked()), this, SLOT(play_clicked()));
-    connect(quit, SIGNAL(clicked()), this, SLOT(close()));
+    connect(play_, SIGNAL(clicked()), this, SLOT(playClicked()));
+    connect(quit_, SIGNAL(clicked()), this, SLOT(close()));
 
 }
 
-void ConfigurationWindow::load_from_file()
-// TODO: implement loading from file
-{
-    QStringList player_names;
-    QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Select Game State file"), "",
-                                                    tr("Game State (*.gs);;All Files(*)"));
-
-    return;
-}
-
-void ConfigurationWindow::play_clicked()
+void ConfigurationWindow::playClicked()
 {
 
     // get players' name
-    QString player_string = line_edit->text();
-    if (player_string.isEmpty())
+    QString playerString = lineEdit_->text();
+    if (playerString.isEmpty())
     {
         QMessageBox mes;
         mes.setText("Please enter players' name. Each player name separated by comma");
@@ -91,7 +72,7 @@ void ConfigurationWindow::play_clicked()
         return;
     }
 
-    QStringList players_ = player_string.split(",", QString::SkipEmptyParts);
+    QStringList players_ = playerString.split(",", QString::SkipEmptyParts);
     if (players_.size() <2)
     {
         QMessageBox mes;
@@ -106,17 +87,18 @@ void ConfigurationWindow::play_clicked()
         players.append(name.simplified());
     }
     // get pawn number
-    int no_pawn = pawn_getter->value();
+    int noPawn = pawnGetter_->value();
 
 
 
 
     Configuration config;
-    config.no_pawn = no_pawn;
+    config.noPawn = noPawn;
     config.players = players;
 
-    emit game_start(config);
+    emit gameStart(config);
 
     close();
     return;
+}
 }

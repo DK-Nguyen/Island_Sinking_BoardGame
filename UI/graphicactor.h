@@ -1,4 +1,4 @@
-﻿#ifndef GRAPHICACTOR_H
+#ifndef GRAPHICACTOR_H
 #define GRAPHICACTOR_H
 
 #include <QGraphicsPixmapItem>
@@ -6,24 +6,24 @@
 #include<QPointF>
 #include<actor.hh>
 
+namespace UI{
 class GraphicActor: public QObject, public QGraphicsPixmapItem{
     Q_OBJECT
 public:
 
-    GraphicActor(std::shared_ptr<Common::Actor> actor_ptr, QGraphicsItem* parent=nullptr);
+    GraphicActor(std::shared_ptr<Common::Actor> actorPtr, QGraphicsItem* parent=nullptr);
 
     QGraphicsItem* parent;
 
-    std::shared_ptr<Common::Actor> get_actor();
-    std::string get_name();
+    std::shared_ptr<Common::Actor> getActor();
 
 signals:
     // notify HexBoard of actor movement-> HexBoard need to reset to old position if move is not valid
-    void actor_is_moved(int actor_id, QPointF old_pos, QPointF new_pos);
+    void actorIsMoved(int actor_id, QPointF old_pos, QPointF new_pos);
 
 public slots:
     // enable movement of actors in appropriate stage
-    void allow_movement(bool allowed, std::list<int> actor_id);
+    void allowMovement(bool allowed, std::list<int> actor_id);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -33,10 +33,10 @@ protected:
 private:
     QPixmap image;
     QPointF old_pos;
-    std::string actor_type;
-    bool movement_allowed;
-    std::shared_ptr<Common::Actor> actor_ptr;
+    std::string actorType_;
+    bool movementAllowed_;
+    std::shared_ptr<Common::Actor> actorPtr_;
 };
-
+}
 
 #endif // GRAPHICACTOR_H

@@ -27,10 +27,8 @@ SOURCES += main.cc \
     hexboard.cpp \
     mainwindow.cpp \
     controlboard.cpp \
-    button.cpp \
     configurationwindow.cpp \
     wheel.cpp \
-    closingwindow.cpp \
     graphictransport.cpp \
     gameover.cpp
 
@@ -44,10 +42,8 @@ HEADERS  += \
     hexboard.h \
     controlboard.h \
     mainwindow.h \
-    button.h \
     configurationwindow.h \
     wheel.h \
-    closingwindow.h \
     graphictransport.h \
     gameover.h
 

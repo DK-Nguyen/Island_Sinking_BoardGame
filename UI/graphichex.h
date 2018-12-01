@@ -6,27 +6,28 @@
 #include<QVector>
 #include<QPointF>
 
+
+namespace UI{
 class GraphicHex: public QObject, public QGraphicsPolygonItem{
 
     Q_OBJECT
 
 public:
 
-    GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, int id, QGraphicsItem* parent=nullptr);
+    GraphicHex(std::shared_ptr<Common::Hex> hexPtr, QVector<QPointF> vertex, int id_, QGraphicsItem* parent=nullptr);
     ~GraphicHex();
 
     // flip
     void flip();
 
     // set color
-    void set_color(std::string type);
+    void setColor(std::string type);
 
-    std::shared_ptr<Common::Hex> get_hex();
+    std::shared_ptr<Common::Hex> getHex();
 
-    QVector<QPointF> get_vertex();
+    QVector<QPointF> getVertex();
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    std::string getName();
 
 protected:
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
@@ -34,14 +35,14 @@ protected:
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
 signals:
-    void clicked(int id);
+    void clicked(int id_);
 
 private:
-    int id;
-    std::shared_ptr<Common::Hex> hex_ptr;
+    int id_;
+    std::shared_ptr<Common::Hex> hexPtr_;
     QVector<QPointF> vertex;
 
 };
-
+}
 
 #endif // GRAPHICHEX_H

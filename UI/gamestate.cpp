@@ -4,53 +4,56 @@
 #include <unordered_map>
 #include <string>
 
+
+namespace Student{
+
 GameState::~GameState()
 {
     return;
 }
 
-GameState::GameState(Common::GamePhase current_phase,
-                     int current_player_id,
+GameState::GameState(Common::GamePhase currentPhase,
+                     int currentPlayerId,
                      std::vector<std::shared_ptr<Common::IPlayer>> players,
-                     std::shared_ptr<std::unordered_map<int, std::string>> player_names,
+                     std::shared_ptr<std::unordered_map<int, std::string>> playerNames,
                      std::shared_ptr<std::unordered_map<std::string, int>> points,
                      std::shared_ptr<std::vector<std::pair<std::string, int>>> top10)
 {
-    this->current_phase = current_phase;
-    this->current_player_id = current_player_id;
-    this->players_ptr = players;
-    this->points = points;
+    this->currentPhase_ = currentPhase;
+    this->currentPlayerId_ = currentPlayerId;
+    this->playersPtr_ = players;
+    this->points_ = points;
     this->top10 = top10;
-    this->player_names = player_names;
+    this->playerNames_ = playerNames;
 }
 
 Common::GamePhase GameState::currentGamePhase() const
 {
-    return GameState::current_phase;
+    return Student::GameState::currentPhase_;
 }
 
 int GameState::currentPlayer() const
 {
-    return GameState::current_player_id;
+    return Student::GameState::currentPlayerId_;
 }
 
 std::string GameState::currentPlayerName() const
 {
-    return player_names->at(currentPlayer());
+    return playerNames_->at(currentPlayer());
 }
 
-std::string GameState::get_player_name(int player_id)
+std::string GameState::getPlayerName(int playerId)
 {
-    return  player_names->at(player_id);
+    return  playerNames_->at(playerId);
 }
 
 QString GameState::currentGamePhaseName() const
 {
-    if (current_phase == 1)
+    if (currentPhase_ == 1)
     {
         return QString("movement");
     }
-    else if (current_phase == 2)
+    else if (currentPhase_ == 2)
     {
         return QString("sinking");
     }
@@ -63,18 +66,18 @@ QString GameState::currentGamePhaseName() const
 
 void GameState::changeGamePhase(Common::GamePhase nextPhase)
 {
-    GameState::current_phase = nextPhase;
+    GameState::currentPhase_ = nextPhase;
 }
 
 void GameState::changePlayerTurn(int nextPlayer)
 {
-    GameState::current_player_id = nextPlayer;
+    GameState::currentPlayerId_ = nextPlayer;
 }
 
 unsigned int GameState::getActionsLeft() const
 {
     unsigned int actions = 0;
-    for (auto it : players_ptr)
+    for (auto it : playersPtr_)
     {
         if (it->getPlayerId() == currentPlayer())
         {
@@ -88,7 +91,7 @@ unsigned int GameState::getActionsLeft() const
 
 void GameState::setActionsLeft(unsigned int amount)
 {
-    for (auto it : players_ptr)
+    for (auto it : playersPtr_)
     {
         if (it->getPlayerId() == currentPlayer())
         {
@@ -97,5 +100,5 @@ void GameState::setActionsLeft(unsigned int amount)
         }
     }
 }
-
+}
 

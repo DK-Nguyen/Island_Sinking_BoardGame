@@ -6,34 +6,35 @@
 #include <QColor>
 #include <QGraphicsSceneMouseEvent>
 
-GraphicHex::~GraphicHex()
+UI::GraphicHex::~GraphicHex()
 {
     return;
 }
 
-GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hex_ptr, QVector<QPointF> vertex, int id, QGraphicsItem* parent): QGraphicsPolygonItem (parent)
+UI::GraphicHex::GraphicHex(std::shared_ptr<Common::Hex> hexPtr, QVector<QPointF> vertex, int id, QGraphicsItem* parent)
+    : QGraphicsPolygonItem (parent)
 {
     this->vertex = vertex;
-    this->hex_ptr = hex_ptr;
-    this->id = id;
+    this->hexPtr_ = hexPtr;
+    this->id_ = id;
 
     // create a polygon with vertex
     QPolygonF hexagon(vertex);
 
     // draw the poly
     setPolygon(hexagon);
-    set_color(hex_ptr->getPieceType());
+    setColor(hexPtr->getPieceType());
     setAcceptDrops(true);
 }
 
 // perform flipping of hex tile
-void GraphicHex::flip()
+void UI::GraphicHex::flip()
 {
-    set_color("Water");
+    setColor("Water");
     return;
 }
 
-void GraphicHex::set_color(std::string type)
+void UI::GraphicHex::setColor(std::string type)
 {
     QColor color;
 
@@ -69,40 +70,35 @@ void GraphicHex::set_color(std::string type)
 
 }
 
-std::shared_ptr<Common::Hex> GraphicHex::get_hex()
+std::shared_ptr<Common::Hex> UI::GraphicHex::getHex()
 {
-    return hex_ptr;
+    return hexPtr_;
 }
 
-QVector<QPointF> GraphicHex::get_vertex()
+QVector<QPointF> UI::GraphicHex::getVertex()
 {
     return vertex;
 }
 
-void GraphicHex::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicHex::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    emit clicked(id);
+    emit clicked(id_);
 }
 
-std::string GraphicHex::getName()
-{
-    return "hex";
-}
-
-void GraphicHex::dropEvent(QGraphicsSceneDragDropEvent *event)
+void UI::GraphicHex::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
      event->setAccepted(true);
      update();
 }
 
 
-void GraphicHex::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+void UI::GraphicHex::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     event->setAccepted(true);
     update();
 }
 
-void GraphicHex::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+void UI::GraphicHex::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 {
     Q_UNUSED(event);
     update();

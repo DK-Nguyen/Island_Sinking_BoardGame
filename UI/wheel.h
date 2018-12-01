@@ -4,38 +4,40 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>
 
+namespace  UI{
 class Wheel: public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
     // constructor
-    Wheel(QString filename, int no_rotation, int interval, bool has_clock_direction, QObject* parent=nullptr);
+    Wheel(QString filename, int noRotation, int interval_, bool hasClockDirection, QObject* parent=nullptr);
 
     // destructor
     ~Wheel();
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void set_click_action(bool flag);
+    void setClickAction(bool flag);
 
 
 signals:
     void clicked();
 
 public slots:
-    void spin(int target_output);
+    void spin(int targetDegree);
 
 
 private:
     QPixmap image;
-    int no_rotation, interval;
-    bool has_clock_direction;
+    int noRotation_, interval_;
+    bool hasClockDirection_;
 
 
-    bool can_click;
+    bool canClick_;
 
     // spin animation
-    void spin_animation(int degree, int target_degree);
+    void spinAnimation(int degree, int targetDegree);
 
 };
+}
 
 #endif // WHEEL_H

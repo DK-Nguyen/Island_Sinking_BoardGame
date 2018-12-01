@@ -7,24 +7,25 @@
 #include<QPointF>
 #include<QBrush>
 
+
+namespace UI{
 class GraphicPawn: public QObject, public QGraphicsPolygonItem{
     Q_OBJECT
 public:
 
-    GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
+    GraphicPawn(std::shared_ptr<Common::Pawn> pawnPtr,
                 double scale,
                 QColor color,
                 std::string owner,
                 QGraphicsItem* parent=nullptr);
 
-    std::shared_ptr<Common::Pawn> get_pawn();
-    std::string getName();
+    std::shared_ptr<Common::Pawn> getPawn();
 
 public slots:
-    void allow_movement(bool allowed, std::list<int> pawn_id);
+    void allowMovement(bool allowed, std::list<int> pawn_id);
 
 signals:
-    void pawn_is_moved(int pawn_id, QPointF old_pos, QPointF new_pos);
+    void pawnIsMoved(int pawn_id, QPointF old_pos, QPointF new_pos);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -32,14 +33,14 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
-    std::shared_ptr<Common::Pawn> pawn_ptr;
+    std::shared_ptr<Common::Pawn> pawnPtr_;
     QGraphicsItem* parent;
     QColor color;
     QBrush brush;
     std::string owner;
     QPointF old_pos;
-    bool movement_allowed;
+    bool movementAllowed_;
 };
-
+}
 
 #endif // GRAPHICPAWN_H

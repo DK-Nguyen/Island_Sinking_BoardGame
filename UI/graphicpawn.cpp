@@ -10,27 +10,27 @@
 #include <pawn.hh>
 #include <iostream>
 
-GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
+UI::GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawnPtr,
                          double scale,
                          QColor color, std::string owner,
                          QGraphicsItem* parent)
     : QGraphicsPolygonItem (parent)
 {
 
-    QVector<QPointF> pawn_vertex;
-    pawn_vertex << QPointF(0,0)*scale;
-    pawn_vertex << QPointF(1,0)*scale;
-    pawn_vertex << QPointF(1,1)*scale;
-    pawn_vertex << QPointF(0,1)*scale;
+    QVector<QPointF> pawnVertex;
+    pawnVertex << QPointF(0,0)*scale;
+    pawnVertex << QPointF(1,0)*scale;
+    pawnVertex << QPointF(1,1)*scale;
+    pawnVertex << QPointF(0,1)*scale;
 
-    this->pawn_ptr = pawn_ptr;
+    this->pawnPtr_ = pawnPtr;
     this->parent = parent;
     this->color = color;
     this->owner = owner;
-    this->movement_allowed = false;
+    this->movementAllowed_ = false;
 
     // create a polygon with vertex
-    QPolygonF polygon(pawn_vertex);
+    QPolygonF polygon(pawnVertex);
 
     // draw the poly
     setPolygon(polygon);
@@ -39,28 +39,23 @@ GraphicPawn::GraphicPawn(std::shared_ptr<Common::Pawn> pawn_ptr,
     brush.setColor(this->color);
     setBrush(brush);
 
-    setToolTip(QString::fromUtf8(this->owner.c_str()) + tr(":") + QString::number(pawn_ptr->getId()));
+    setToolTip(QString::fromUtf8(this->owner.c_str()) + tr(":") + QString::number(pawnPtr->getId()));
 
 }
 
 
-std::shared_ptr<Common::Pawn> GraphicPawn::get_pawn()
+std::shared_ptr<Common::Pawn> UI::GraphicPawn::getPawn()
 {
-    return pawn_ptr;
+    return pawnPtr_;
 }
 
-std::string GraphicPawn::getName()
+void UI::GraphicPawn::allowMovement(bool allowed, std::list<int> pawnId)
 {
-    return "pawn";
-}
-
-void GraphicPawn::allow_movement(bool allowed, std::list<int> pawn_id)
-{
-    for (auto id : pawn_id)
+    for (auto id : pawnId)
     {
-        if (id == pawn_ptr->getId())
+        if (id == pawnPtr_->getId())
         {
-            movement_allowed = allowed;
+            movementAllowed_ = allowed;
 
             if (allowed)
             {
@@ -78,24 +73,24 @@ void GraphicPawn::allow_movement(bool allowed, std::list<int> pawn_id)
     }
 }
 
-void GraphicPawn::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicPawn::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     setCursor(Qt::ClosedHandCursor);
     old_pos = this->scenePos();
     QGraphicsItem::mousePressEvent(event);
 }
 
-void GraphicPawn::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicPawn::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {   
     QGraphicsItem::mouseMoveEvent(event);
 }
 
-void GraphicPawn::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicPawn::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
     setCursor(Qt::OpenHandCursor);
     QPointF new_pos = this->scenePos();
-    emit pawn_is_moved(this->pawn_ptr->getId(), old_pos, new_pos);
+    emit pawnIsMoved(this->pawnPtr_->getId(), old_pos, new_pos);
     std::cerr << "old pos: " << old_pos.rx() << ", " << old_pos.ry() << "\n";
     std::cerr << "new pos: " << new_pos.rx() << ", " << new_pos.ry() << "\n";
 }

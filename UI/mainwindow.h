@@ -27,6 +27,7 @@ struct Compare{
   bool operator() (std::pair<std::string, int> x, std::pair<std::string, int> y) { return (x.second > y.second);}
 };
 
+namespace UI{
 
 class MainWindow: public QWidget
 {
@@ -37,28 +38,28 @@ public:
 
 
 signals:
-    void point_change(std::vector<int>);
+    void pointChange(std::vector<int>);
 
 public slots:
-    void quit_game();
-    void initialize_game(Configuration config);
-    void update_point(std::vector<int> IDs, std::vector<int> increment);
-    void game_over(std::string winner);
-    void play_again();
+    void quitGame();
+    void initializeGame(UI::Configuration cconfig_);
+    void updatePoint(std::vector<int> IDs, std::vector<int> increment);
+    void gameOver(std::string winner);
+    void playAgain();
 
 private:
-    std::shared_ptr<Common::IGameRunner> game_runner;
-    std::shared_ptr<Student::GameBoard> game_board;
-    std::shared_ptr<GameState> game_state;
-    std::vector<std::shared_ptr<Common::IPlayer>> players;
-    std::vector<std::pair<int, int>> pawn_list;
-    std::shared_ptr<std::unordered_map<int, std::string>> player_names;
-    std::shared_ptr<std::unordered_map<std::string, int>> points;
-    std::shared_ptr<std::vector<std::pair<std::string, int>>> top10;
-    HexBoard* hex_board;
-    ControlBoard* control_board;
-    Configuration config;
-    std::vector<Common::CubeCoordinate> mountain_tiles;
+    std::shared_ptr<Common::IGameRunner> gameRunner_;
+    std::shared_ptr<Student::GameBoard> gameBoard_;
+    std::shared_ptr<Student::GameState> gameState_;
+    std::vector<std::shared_ptr<Common::IPlayer>> players_;
+    std::vector<std::pair<int, int>> pawnList_;
+    std::shared_ptr<std::unordered_map<int, std::string>> playerNames_;
+    std::shared_ptr<std::unordered_map<std::string, int>> points_;
+    std::shared_ptr<std::vector<std::pair<std::string, int>>> top10_;
+    UI::HexBoard* hexBoard_;
+    UI::ControlBoard* controlBoard_;
+    UI::Configuration config_;
+    std::vector<Common::CubeCoordinate> mountainTiles_;
 
     void constructWindow();
     void loadTop10();
@@ -67,4 +68,5 @@ private:
 
 };
 
+}
 #endif // MAINWINDOW_H

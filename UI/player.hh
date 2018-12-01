@@ -3,12 +3,12 @@
 
 #include "iplayer.hh"
 #include <string>
-
+namespace  Student{
 class Player : public Common::IPlayer
 {
 public:
     Player();
-    Player(int id);
+    Player(int id_);
     ~Player();
 
     virtual int getPlayerId() const;
@@ -18,8 +18,9 @@ public:
     virtual unsigned int getActionsLeft() const;
 
 private:
-    int id;
-    unsigned int actions_left;
+    int id_;
+    unsigned int actionsLeft_;
 };
+}
 
 #endif // PLAYER_HH

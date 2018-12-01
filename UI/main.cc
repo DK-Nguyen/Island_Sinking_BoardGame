@@ -17,12 +17,12 @@ int main(int argc, char *argv[])
     a.setApplicationName("Island Sinking Game");
 
 
-    ConfigurationWindow *config_window = new ConfigurationWindow(nullptr);
-    MainWindow *main_window = new MainWindow(nullptr);
+    UI::ConfigurationWindow *configWindow = new UI::ConfigurationWindow(nullptr);
+    UI::MainWindow *mainWindow = new UI::MainWindow(nullptr);
 
-    QObject::connect(config_window, SIGNAL(game_start(Configuration)), main_window, SLOT(initialize_game(Configuration)));
+    QObject::connect(configWindow, SIGNAL(gameStart(UI::Configuration)), mainWindow, SLOT(initializeGame(UI::Configuration)));
 
-    config_window->show();
+    configWindow->show();
 
     return a.exec();
 }

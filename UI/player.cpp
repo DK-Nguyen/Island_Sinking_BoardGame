@@ -1,29 +1,29 @@
 ﻿#include<player.hh>
 
-Player::Player(int id)
+Student::Player::Player(int id)
 {
-    this->id = id;
+    this->id_ = id;
 }
 
-Player::~Player()
+Student::Player::~Player()
 {
    return;
 }
 
-int Player::getPlayerId() const
+int Student::Player::getPlayerId() const
 {
-    return Player::id;
+    return Student::Player::id_;
 }
 
 
-unsigned int Player::getActionsLeft() const
+unsigned int Student::Player::getActionsLeft() const
 {
-    return Player::actions_left;
+    return Student::Player::actionsLeft_;
 }
 
-void Player::setActionsLeft(unsigned int actionsLeft)
+void Student::Player::setActionsLeft(unsigned int actionsLeft)
 {
-    Player::actions_left = actionsLeft;
+    Student::Player::actionsLeft_ = actionsLeft;
 }
 
 

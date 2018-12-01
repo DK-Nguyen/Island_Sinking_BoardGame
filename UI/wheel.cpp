@@ -2,13 +2,13 @@
 #include <QTimer>
 #include <iostream>
 
-Wheel::Wheel(QString filename, int no_rotation, int interval, bool has_clock_direction, QObject *parent)
+UI::Wheel::Wheel(QString filename, int noRotation, int interval, bool hasClockDirection, QObject *parent)
     :QObject (parent)
 {
-    this->no_rotation = no_rotation;
-    this->interval = interval;
-    this->has_clock_direction = has_clock_direction;
-    this->can_click = false;
+    this->noRotation_ = noRotation;
+    this->interval_ = interval;
+    this->hasClockDirection_ = hasClockDirection;
+    this->canClick_ = false;
 
     image = QPixmap(filename);
     setPixmap(image);
@@ -16,66 +16,66 @@ Wheel::Wheel(QString filename, int no_rotation, int interval, bool has_clock_dir
 
 }
 
-Wheel::~Wheel()
+UI::Wheel::~Wheel()
 {
     return;
 }
 
-void Wheel::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void UI::Wheel::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (can_click)
+    if (canClick_)
     {
         emit clicked();
     }
 }
 
-void Wheel::spin(int target_degree)
+void UI::Wheel::spin(int targetDegree)
 {
-    if (has_clock_direction)
+    if (hasClockDirection_)
     {
-        if (target_degree < 0)
+        if (targetDegree < 0)
         {
-            target_degree = 360 - target_degree;
+            targetDegree = 360 - targetDegree;
         }
     }
     else
     {
-        if (target_degree > 0)
+        if (targetDegree > 0)
         {
-            target_degree = target_degree - 360;
+            targetDegree = targetDegree - 360;
         }
     }
 
 
-    setRotation(target_degree);
-    spin_animation(target_degree, target_degree + 360*no_rotation);
+    setRotation(targetDegree);
+    spinAnimation(targetDegree, targetDegree + 360*noRotation_);
 
     return ;
 }
 
-void Wheel::set_click_action(bool flag)
+void UI::Wheel::setClickAction(bool flag)
 {
-    can_click = flag;
+    canClick_ = flag;
 }
 
 
-void Wheel::spin_animation(int degree, int target_degree)
+void UI::Wheel::spinAnimation(int degree, int targetDegree)
 {
     setRotation(degree);
-    if (has_clock_direction)
+    if (hasClockDirection_)
     {
-        if (degree < target_degree)
+        if (degree < targetDegree)
         {
-            int target = std::min(target_degree, degree+30);
-            QTimer::singleShot(interval, [=]{spin_animation(target, target_degree);});
+            int target = std::min(targetDegree, degree+30);
+            QTimer::singleShot(interval_, [=]{spinAnimation(target, targetDegree);});
         }
     }
     else
     {
-        if (degree > -target_degree)
+        if (degree > -targetDegree)
         {
-            int target = std::max(-target_degree, degree-30);
-            QTimer::singleShot(interval, [=]{spin_animation(target, target_degree);});
+            int target = std::max(-targetDegree, degree-30);
+            QTimer::singleShot(interval_, [=]{spinAnimation(target, targetDegree);});
         }
     }
 }

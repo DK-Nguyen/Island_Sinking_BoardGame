@@ -1,4 +1,4 @@
-#ifndef CONFIGURATIONDIALOG_H
+﻿#ifndef CONFIGURATIONDIALOG_H
 #define CONFIGURATIONDIALOG_H
 
 #include <QDialog>
@@ -8,9 +8,10 @@
 #include <QSpinBox>
 #include <QVector>
 
+namespace UI{
 struct Configuration{
     QStringList players;
-    int no_pawn;
+    int noPawn;
 };
 
 
@@ -23,20 +24,18 @@ public:
     ~ConfigurationWindow();
 
 signals:
-    void game_start(Configuration config);
+    void gameStart(UI::Configuration config);
 
 private slots:
-    void play_clicked();
-    void load_from_file();
+    void playClicked();
 
 private:
-    QPushButton* play;
-    QPushButton* quit;
-    QPushButton* load;
-    QLabel *line_edit_lb, *spinbox_lb;
-    QLineEdit* line_edit;
-    QSpinBox* pawn_getter;
+    QPushButton* play_;
+    QPushButton* quit_;
+    QLabel *lineEditLb_, *spinboxLb_;
+    QLineEdit* lineEdit_;
+    QSpinBox* pawnGetter_;
 
 };
-
+}
 #endif // CONFIGURATIONDIALOG_H

@@ -6,6 +6,7 @@
 class QLabel;
 class QPushButton;
 
+namespace UI{
 class GameOverWindow: public QDialog
 
 {
@@ -13,17 +14,17 @@ class GameOverWindow: public QDialog
 public:
     GameOverWindow(std::string winner, QWidget* parent=nullptr);
 
-    QLabel* prompt;
-    QPushButton *play_again_button, *quit_button;
+    QLabel* prompt_;
+    QPushButton *playAgainButton_, *quitButton_;
 
 signals:
-    void play_again();
+    void playAgain();
     void quit();
 
 private slots:
-    void play_again_clicked();
-    void quit_clicked();
+    void playAgainClicked();
+    void quitClicked();
 };
-
+}
 
 #endif // GAMEOVER_H

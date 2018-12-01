@@ -6,232 +6,197 @@
 #include <QtWidgets>
 #include <igamerunner.hh>
 #include <iostream>
-#include <closingwindow.h>
+#include <wheel.h>
 
-
+namespace UI{
 
 
 ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
-                           std::shared_ptr<GameState> game_state,
-                           double board_scale,
+                           std::shared_ptr<Student::GameState> gameState_,
+                           double boardScale_,
                            QWidget* parent)
+
     : QGraphicsView (parent)
 
 {
-    this->game_engine = game_engine;
-    this->game_state = game_state;
-    this->allow_quit = false;
-    this->board_scale = board_scale;
+    this->gameEngine_ = game_engine;
+    this->gameState_ = gameState_;
+    this->allowQuitting_ = false;
+    this->boardScale_ = boardScale_;
 
 
-    setFixedSize(int(WIDTH*board_scale), int(HEIGHT*board_scale));
+    setFixedSize(int(WIDTH*boardScale_), int(HEIGHT*boardScale_));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    this->scene = new QGraphicsScene(this);
-    scene->setSceneRect(0,0,int(WIDTH*board_scale), int(HEIGHT*board_scale));
-    setScene(scene);
-    scene->clear();
+    this->scene_ = new QGraphicsScene(this);
+    scene_->setSceneRect(0,0,int(WIDTH*boardScale_), int(HEIGHT*boardScale_));
+    setScene(scene_);
+    scene_->clear();
 
-    // handle buttons
-
-    play_button = new QPushButton(tr("Play"));
-    play_button->setFixedSize(int(BUTTON_SIZE.first*board_scale), int(BUTTON_SIZE.second*board_scale));
-    QGraphicsProxyWidget* play_button_proxy = scene->addWidget(play_button);
-    play_button_proxy->setPos(PLAY_BUTTON_POS*board_scale);
-    connect(play_button, SIGNAL(clicked()), this, SLOT(deactivate_play_button()));
-
-
-    save_button = new QPushButton(tr("Save"));
-    save_button->setToolTip(tr("Save current game"));
-    save_button->setFixedSize(int(BUTTON_SIZE.first*board_scale), int(BUTTON_SIZE.second*board_scale));
-    auto save_button_proxy = scene->addWidget(save_button);
-    save_button_proxy->setPos(SAVE_BUTTON_POS*board_scale);
-    connect(save_button, SIGNAL(clicked()), this, SLOT(save_button_clicked()));
-
-
-    quit_button = new QPushButton(tr("Quit"));
-    quit_button->setFixedSize(int(BUTTON_SIZE.first*board_scale), int(BUTTON_SIZE.second*board_scale));
-    auto quit_button_proxy = scene->addWidget(quit_button); // const std::pair<int, int> QUIT_BUTTON_POS = std::make_pair(245,15);
-    quit_button_proxy->setPos(QUIT_BUTTON_POS*board_scale);
-    connect(quit_button, SIGNAL(clicked()), this, SLOT(quit_button_clicked()));
+    quitButton_ = new QPushButton(tr("Quit"));
+    quitButton_->setFixedSize(int(BUTTON_SIZE.first*boardScale_), int(BUTTON_SIZE.second*boardScale_));
+    auto quitButton__proxy = scene_->addWidget(quitButton_);
+    quitButton__proxy->setPos(QUIT_BUTTON_POS*boardScale_);
+    connect(quitButton_, SIGNAL(clicked()), this, SLOT(quitButtonClicked()));
 
     // handle game state display
-    current_turn = new QGraphicsTextItem(tr("Current Turn: ") + QString::fromUtf8(game_state->currentPlayerName().c_str()));
-    current_turn->adjustSize();
-    current_turn->setPos(TURN_POS*board_scale);
-    scene->addItem(current_turn);
-    current_turn->setScale(1.1*board_scale);
-    current_turn->setTextWidth(-1);
+    currentTurn_ = new QGraphicsTextItem(tr("Current Turn: ") + QString::fromUtf8(gameState_->currentPlayerName().c_str()));
+    currentTurn_->adjustSize();
+    currentTurn_->setPos(TURN_POS*boardScale_);
+    scene_->addItem(currentTurn_);
+    currentTurn_->setScale(1.1*boardScale_);
+    currentTurn_->setTextWidth(-1);
 
-    stage = new QGraphicsTextItem(tr("Stage: ") + game_state->currentGamePhaseName());
-    stage->adjustSize();
-    stage->setPos(STAGE_POS*board_scale);
-    scene->addItem(stage);
-    stage->setScale(1.1*board_scale);
-    stage->setTextWidth(-1);
+    stage_ = new QGraphicsTextItem(tr("stage: ") + gameState_->currentGamePhaseName());
+    stage_->adjustSize();
+    stage_->setPos(STAGE_POS*boardScale_);
+    scene_->addItem(stage_);
+    stage_->setScale(1.1*boardScale_);
+    stage_->setTextWidth(-1);
 
-    movement_left = new QGraphicsTextItem(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
-    movement_left->adjustSize();
-    movement_left->setPos(ACTION_POS*board_scale);
-    scene->addItem(movement_left);
-    movement_left->setScale(1.1*board_scale);
-    movement_left->setTextWidth(-1);
+    movementLeft_ = new QGraphicsTextItem(tr("Action Left: ") + QString::number(gameState_->getActionsLeft()));
+    movementLeft_->adjustSize();
+    movementLeft_->setPos(ACTION_POS*boardScale_);
+    scene_->addItem(movementLeft_);
+    movementLeft_->setScale(1.1*boardScale_);
+    movementLeft_->setTextWidth(-1);
 
     // handle statistics
 
-    points_title = new QGraphicsTextItem(tr("** POINTS **"));
-    points_title->adjustSize();
-    points_title->setPos(POINT_TT_POS*board_scale);
-    scene->addItem(points_title);
-    points_title->setScale(1.25*board_scale);
-    points_title->setTextWidth(-1);
-    initialize_points();
+    pointTitle_ = new QGraphicsTextItem(tr("** POINTS **"));
+    pointTitle_->adjustSize();
+    pointTitle_->setPos(POINT_TT_POS*boardScale_);
+    scene_->addItem(pointTitle_);
+    pointTitle_->setScale(1.25*boardScale_);
+    pointTitle_->setTextWidth(-1);
+    initializePoints();
 
-    top10_title = new QGraphicsTextItem(tr("** TOP10 **"));
-    top10_title->adjustSize();
-    top10_title->setPos(TOP10_TT_POS*board_scale);
-    scene->addItem(top10_title);
-    top10_title->setScale(1.25*board_scale);
-    top10_title->setTextWidth(-1);
-    initialize_top10();
+    top10Title_ = new QGraphicsTextItem(tr("** TOP10 **"));
+    top10Title_->adjustSize();
+    top10Title_->setPos(TOP10_TT_POS*boardScale_);
+    scene_->addItem(top10Title_);
+    top10Title_->setScale(1.25*boardScale_);
+    top10Title_->setTextWidth(-1);
+    initializeTop10();
 
     // handle wheel
-    initialize_inner_wheel();
-    initialize_outter_wheel();
+    initializeInnerWheel();
+    initializeOutterWheel();
 
 }
 
 void ControlBoard::clear()
 {
-    points_txt.clear();
-    top10_txt.clear();
+    pointTxt_.clear();
+    top10Txt_.clear();
 }
 
-void ControlBoard::save_button_clicked()
-// TODO: perform saving function
+void ControlBoard::wheelClicked()
 {
-    emit control_board_close();
-}
+    auto wheelOutput = gameEngine_->spinWheel();
+    int innerDegree, outterDegree;
 
-void ControlBoard::wheel_clicked()
-{
-    auto wheel_output = game_engine->spinWheel();
-    int inner_degree, outter_degree;
-
-    if (wheel_output.first.compare("dolphin")==0)
+    if (wheelOutput.first.compare("dolphin")==0)
     {
-        inner_degree = 0;
+        innerDegree = 0;
     }
-    else if (wheel_output.first.compare("kraken")==0) {
-        inner_degree = -90;
+    else if (wheelOutput.first.compare("kraken")==0) {
+        innerDegree = -90;
     }
-    else if (wheel_output.first.compare("seamunster")==0) {
-        inner_degree = -180;
+    else if (wheelOutput.first.compare("seamunster")==0) {
+        innerDegree = -180;
     }
     else{
-        inner_degree = -270;
+        innerDegree = -270;
     }
 
-    if (wheel_output.second.compare("1")==0)
+    if (wheelOutput.second.compare("1")==0)
     {
-        outter_degree = -90;
+        outterDegree = -90;
     }
-    else if (wheel_output.second.compare("2")==0) {
-        outter_degree = 0;
+    else if (wheelOutput.second.compare("2")==0) {
+        outterDegree = 0;
     }
-    else if (wheel_output.second.compare("3")==0) {
-        outter_degree = 270;
+    else if (wheelOutput.second.compare("3")==0) {
+        outterDegree = 270;
     }
     else{
-        outter_degree = 180;
+        outterDegree = 180;
     }
 
-    emit animate_inner_wheel(inner_degree);
-    emit animate_outter_wheel(outter_degree);
-    emit wheel_spin(wheel_output);
+    emit animateInnerWheel(innerDegree);
+    emit animateOutterWheel(outterDegree);
+    emit wheelSpin(wheelOutput);
 
-    inner_wheel->set_click_action(false);
-    outter_wheel->set_click_action(false);
+    innerWheel_->setClickAction(false);
+    outterWheel_->setClickAction(false);
 }
 
-void ControlBoard::quit_game()
+void ControlBoard::quitButtonClicked()
 {
-    close();
+    emit controlBoardClose();
 }
 
-void ControlBoard::quit_button_clicked()
+void ControlBoard::updateCurrentTurn()
 {
-    save_button_clicked();
-}
-
-
-void ControlBoard::deactivate_play_button()
-{
-    play_button->setEnabled(false);
-    return;
-}
-
-void ControlBoard::update_current_turn()
-{
-    current_turn->setPlainText(tr("Current Turn: ") + QString::fromUtf8(game_state->currentPlayerName().c_str()));
+    currentTurn_->setPlainText(tr("Current Turn: ") + QString::fromUtf8(gameState_->currentPlayerName().c_str()));
     update();
     return;
 }
-void ControlBoard::update_stage()
+void ControlBoard::updateStage()
 {
-    stage->setPlainText(tr("Stage: ") + game_state->currentGamePhaseName());
+    stage_->setPlainText(tr("stage_: ") + gameState_->currentGamePhaseName());
     update();
     return;
 }
-void ControlBoard::update_movement_left()
+void ControlBoard::updateMovementLeft()
 {
-    movement_left->setPlainText(tr("Action Left: ") + QString::number(game_state->getActionsLeft()));
-    std::cerr << "receive update signal for movement left: " << game_state->getActionsLeft() << "\n";
+    movementLeft_->setPlainText(tr("Action Left: ") + QString::number(gameState_->getActionsLeft()));
     update();
     return;
 }
-void ControlBoard::update_point(std::vector<int> player_IDs)
+void ControlBoard::updatePoint(std::vector<int> player_IDs)
 {
     for (auto player_id : player_IDs)
     {
-        auto player_name = QString::fromUtf8(game_state->get_player_name(player_id).c_str());
-        auto text = points_txt[player_name];
-        text->setPlainText(tr("• ") + player_name +
-                           tr(": ") + QString::number(game_state->points->at(game_state->get_player_name(player_id))));
+        auto playerName = QString::fromUtf8(gameState_->getPlayerName(player_id).c_str());
+        auto text = pointTxt_[playerName];
+        text->setPlainText(tr("• ") + playerName +
+                           tr(": ") + QString::number(gameState_->points_->at(gameState_->getPlayerName(player_id))));
         text->setTextWidth(-1);
     }
     update();
     return;
 }
 
-void ControlBoard::update_top10()
+void ControlBoard::updateTop10()
 {
-    auto top10 = *(game_state->top10);
+    auto top10 = *(gameState_->top10);
     for (auto i=0; i<top10.size(); i++)
     {
         QString player_data = tr("• ") +
                               QString::fromUtf8(top10[i].first.c_str()) +
                               tr(": ") + QString::number(top10[i].second);
-        top10_txt[i]->setPlainText(player_data);
-        top10_txt[i]->setTextWidth(-1);
+        top10Txt_[i]->setPlainText(player_data);
+        top10Txt_[i]->setTextWidth(-1);
 
     }
     update();
 }
 
-void ControlBoard::set_wheel_click(bool flag)
+void ControlBoard::setWheelClick(bool flag)
 {
-    inner_wheel->set_click_action(flag);
-    outter_wheel->set_click_action(flag);
+    innerWheel_->setClickAction(flag);
+    outterWheel_->setClickAction(flag);
 }
 
-void ControlBoard::initialize_points()
+void ControlBoard::initializePoints()
 // visualize initial points of players
 {
-    auto pos =POINT_POS*board_scale;
+    auto pos =POINT_POS*boardScale_;
 
-    for (auto it = (*(game_state->points)).begin(); it!= (*(game_state->points)).end(); it++)
+    for (auto it = (*(gameState_->points_)).begin(); it!= (*(gameState_->points_)).end(); it++)
     {
         QString player_data = tr("• ") +
                 QString::fromUtf8(it->first.c_str()) +
@@ -240,19 +205,19 @@ void ControlBoard::initialize_points()
         auto text = new QGraphicsTextItem(player_data);
         text->adjustSize();
         text->setPos(pos);
-        scene->addItem(text);
-        text->setScale(1.1*board_scale);
-        pos += QPointF(0,25*board_scale);
+        scene_->addItem(text);
+        text->setScale(1.1*boardScale_);
+        pos += QPointF(0,25*boardScale_);
 
         // keep pointers to text items
-        points_txt[QString::fromUtf8(it->first.c_str())] = text;
+        pointTxt_[QString::fromUtf8(it->first.c_str())] = text;
     }
 }
 
-void ControlBoard::initialize_top10()
+void ControlBoard::initializeTop10()
 // visualize top 10 players
 {
-    auto pos = TOP10_POS*board_scale;
+    auto pos = TOP10_POS*boardScale_;
 
     for (unsigned int i=0; i < 10; i++)
     {
@@ -260,84 +225,74 @@ void ControlBoard::initialize_top10()
         auto text = new QGraphicsTextItem(player_data);
         text->adjustSize();
         text->setPos(pos);
-        scene->addItem(text);
-        text->setScale(1.1*board_scale);
-        pos += QPointF(0,25*board_scale);
+        scene_->addItem(text);
+        text->setScale(1.1*boardScale_);
+        pos += QPointF(0,25*boardScale_);
 
         // keep pointers to text items
-        top10_txt.push_back(text);
+        top10Txt_.push_back(text);
     }
 
-    update_top10();
+    updateTop10();
 }
 
-void ControlBoard::initialize_inner_wheel()
+void ControlBoard::initializeInnerWheel()
 {
     // load wheel symbol
-    inner_wheel = new Wheel(":/Images/inner_wheel.png", 5, 30, false, this);
-    inner_wheel->setScale(0.35*board_scale);
-    scene->addItem(inner_wheel);
+    innerWheel_ = new UI::Wheel(":/Images/inner_wheel.png", 5, 30, false, this);
+    innerWheel_->setScale(0.35*boardScale_);
+    scene_->addItem(innerWheel_);
 
-    auto pos = inner_wheel->scenePos();
-    std::cerr << "inner wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
+    auto pos = innerWheel_->scenePos();
 
-    connect(inner_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
-    connect(this, SIGNAL(animate_inner_wheel(int)), inner_wheel, SLOT(spin(int)));
+    connect(innerWheel_, SIGNAL(clicked()), this, SLOT(wheelClicked()));
+    connect(this, SIGNAL(animateInnerWheel(int)), innerWheel_, SLOT(spin(int)));
 
-    QPointF target_pos = WHEEL_POS*board_scale - inner_wheel->scenePos()*board_scale;
-    inner_wheel->setPos(target_pos);
+    QPointF target_pos = WHEEL_POS*boardScale_ - innerWheel_->scenePos()*boardScale_;
+    innerWheel_->setPos(target_pos);
 
-    pos = inner_wheel->scenePos();
-    std::cerr << "inner wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
-
-//    auto rect = inner_wheel->boundingRect();
-//    std::cerr << "inner wheel bbox: " << rect.x() << ", " << rect.y() << ", " << rect.width() << ", " << rect.height() << "\n";
+    pos = innerWheel_->scenePos();
 }
 
-void ControlBoard::initialize_outter_wheel()
+void ControlBoard::initializeOutterWheel()
 {
     // load wheel symbol
-    outter_wheel = new Wheel(":/Images/outter_wheel.png", 5, 30, true, this);
-    outter_wheel->setScale(0.35*board_scale);
-    scene->addItem(outter_wheel);
+    outterWheel_ = new UI::Wheel(":/Images/outter_wheel.png", 5, 30, true, this);
+    outterWheel_->setScale(0.35*boardScale_);
+    scene_->addItem(outterWheel_);
 
-    connect(outter_wheel, SIGNAL(clicked()), this, SLOT(wheel_clicked()));
-    connect(this, SIGNAL(animate_outter_wheel(int)), outter_wheel, SLOT(spin(int)));
+    connect(outterWheel_, SIGNAL(clicked()), this, SLOT(wheelClicked()));
+    connect(this, SIGNAL(animateOutterWheel(int)), outterWheel_, SLOT(spin(int)));
 
-    auto pos = outter_wheel->scenePos();
-    auto origin = outter_wheel->transformOriginPoint();
-    std::cerr << "outter wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
-    std::cerr << "transform origin: " << origin.rx() << ", " << origin.ry() << "\n";
+    auto pos = outterWheel_->scenePos();
+    auto origin = outterWheel_->transformOriginPoint();
 
-    QPointF target_pos = WHEEL_POS*board_scale - outter_wheel->scenePos()*board_scale;
-    outter_wheel->setPos(target_pos);
+    QPointF target_pos = WHEEL_POS*boardScale_ - outterWheel_->scenePos()*boardScale_;
+    outterWheel_->setPos(target_pos);
 
-    pos = outter_wheel->scenePos();
-    origin = outter_wheel->transformOriginPoint();
-    std::cerr << "outter wheel scene pos: " << pos.rx() << ", " << pos.ry() << "\n";
-    std::cerr << "transform origin: " << origin.rx() << ", " << origin.ry() << "\n";
+    pos = outterWheel_->scenePos();
+    origin = outterWheel_->transformOriginPoint();
 
 
-    // marker
+    // marker_
     QVector<QPointF> vertex;
-    QPointF v1 = outter_wheel->pos() + QPointF(410, 300)*board_scale;
+    QPointF v1 = outterWheel_->pos() + QPointF(410, 300)*boardScale_;
 
     vertex.push_back(v1);
-    vertex.push_back(v1 + QPointF(20, -10)*board_scale);
-    vertex.push_back(v1 + QPointF(20, 10)*board_scale);
+    vertex.push_back(v1 + QPointF(20, -10)*boardScale_);
+    vertex.push_back(v1 + QPointF(20, 10)*boardScale_);
 
     QPolygonF triagle(vertex);
-    marker = new QGraphicsPolygonItem(triagle);
+    marker_ = new QGraphicsPolygonItem(triagle);
 
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
     brush.setColor(Qt::red);
-    marker->setBrush(brush);
-    scene->addItem(marker);
+    marker_->setBrush(brush);
+    scene_->addItem(marker_);
 
 }
-
-
+}
 
 
 

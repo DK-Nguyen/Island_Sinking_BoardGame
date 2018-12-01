@@ -7,29 +7,28 @@
 #include <QDrag>
 
 
-GraphicActor::GraphicActor(std::shared_ptr<Common::Actor> actor_ptr, QGraphicsItem* parent)
+UI::GraphicActor::GraphicActor(std::shared_ptr<Common::Actor> actorPtr, QGraphicsItem* parent)
     : QGraphicsPixmapItem (parent)
 {
 
-    this->actor_ptr = actor_ptr;
+    this->actorPtr_ = actorPtr;
     this->parent = parent;
-    actor_type = actor_ptr->getActorType();
-    movement_allowed = false;
+    actorType_ = actorPtr->getActorType();
+    movementAllowed_ = false;
 
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsMovable, false);
 
-    std::cerr << "creating graphic " << actor_type << "\n";
 
-    if (actor_type.compare("kraken")==0)
+    if (actorType_.compare("kraken")==0)
     {
         image = QPixmap(":/Images/kraken.png");
     }
-    else if (actor_type.compare("seamunster")==0)
+    else if (actorType_.compare("seamunster")==0)
     {
         image = QPixmap(":/Images/seamunster.png");
     }
-    else if (actor_type.compare("shark")==0)
+    else if (actorType_.compare("shark")==0)
     {
         image = QPixmap(":/Images/shark.png");
     }
@@ -40,28 +39,21 @@ GraphicActor::GraphicActor(std::shared_ptr<Common::Actor> actor_ptr, QGraphicsIt
 
     setPixmap(image);
 
-    setToolTip(QString::fromUtf8(actor_type.c_str()));
+    setToolTip(QString::fromUtf8(actorType_.c_str()));
 }
 
-std::shared_ptr<Common::Actor> GraphicActor::get_actor()
+std::shared_ptr<Common::Actor> UI::GraphicActor::getActor()
 {
-    return actor_ptr;
+    return actorPtr_;
 }
 
-std::string GraphicActor::get_name()
+void UI::GraphicActor::allowMovement(bool allowed, std::list<int> actorId)
 {
-    return "actor";
-}
-
-
-
-void GraphicActor::allow_movement(bool allowed, std::list<int> actor_id)
-{
-    for (auto id : actor_id)
+    for (auto id : actorId)
     {
-        if (id == actor_ptr->getId())
+        if (id == actorPtr_->getId())
         {
-            movement_allowed = allowed;
+            movementAllowed_ = allowed;
 
             if (allowed)
             {
@@ -79,20 +71,20 @@ void GraphicActor::allow_movement(bool allowed, std::list<int> actor_id)
     }
 }
 
-void GraphicActor::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicActor::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     old_pos = this->scenePos();
     QGraphicsItem::mousePressEvent(event);
 }
 
-void GraphicActor::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicActor::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseMoveEvent(event);
 }
 
-void GraphicActor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void UI::GraphicActor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsItem::mouseReleaseEvent(event);
     QPointF new_pos = this->scenePos();
-    emit actor_is_moved(actor_ptr->getId(), old_pos, new_pos);
+    emit actorIsMoved(actorPtr_->getId(), old_pos, new_pos);
 }

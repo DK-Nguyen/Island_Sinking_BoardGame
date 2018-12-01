@@ -4,7 +4,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-GameOverWindow::GameOverWindow(std::string winner, QWidget *parent): QDialog(parent)
+UI::GameOverWindow::GameOverWindow(std::string winner, QWidget *parent): QDialog(parent)
 {
     std::string msg;
     if (winner.compare("")==0)
@@ -15,36 +15,36 @@ GameOverWindow::GameOverWindow(std::string winner, QWidget *parent): QDialog(par
     {
         msg = winner + " wins. Game's Over. Do you want to play again?";
     }
-    prompt = new QLabel(QString::fromUtf8(msg.c_str()));
-    play_again_button = new QPushButton("Play Again");
+    prompt_ = new QLabel(QString::fromUtf8(msg.c_str()));
+    playAgainButton_ = new QPushButton("Play Again");
 
-    connect(play_again_button, SIGNAL(clicked()), this, SLOT(play_again_clicked()));
+    connect(playAgainButton_, SIGNAL(clicked()), this, SLOT(playAgainClicked()));
 
-    quit_button = new QPushButton("Quit");
-    quit_button->setToolTip("Quit game anyway");
-    connect(quit_button, SIGNAL(clicked()), this, SLOT(quit_clicked()));
+    quitButton_ = new QPushButton("Quit");
+    quitButton_->setToolTip("Quit game anyway");
+    connect(quitButton_, SIGNAL(clicked()), this, SLOT(quitClicked()));
 
-    QHBoxLayout *button_layout = new QHBoxLayout();
-    button_layout->addWidget(play_again_button);
-    button_layout->addWidget(quit_button);
+    QHBoxLayout *buttonLayout_ = new QHBoxLayout();
+    buttonLayout_->addWidget(playAgainButton_);
+    buttonLayout_->addWidget(quitButton_);
 
-    QVBoxLayout *main_layout = new QVBoxLayout();
-    main_layout->addWidget(prompt);
-    main_layout->addLayout(button_layout);
-    setLayout(main_layout);
+    QVBoxLayout *mainLayout_ = new QVBoxLayout();
+    mainLayout_->addWidget(prompt_);
+    mainLayout_->addLayout(buttonLayout_);
+    setLayout(mainLayout_);
 
     setWindowTitle("Quit");
     setFixedHeight(sizeHint().height());
 }
 
-void GameOverWindow::play_again_clicked()
+void UI::GameOverWindow::playAgainClicked()
 {
-    emit play_again();
+    emit playAgain();
     close();
 }
 
 
-void GameOverWindow::quit_clicked()
+void UI::GameOverWindow::quitClicked()
 {
     emit quit();
     close();

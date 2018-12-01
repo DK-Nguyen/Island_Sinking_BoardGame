@@ -91,6 +91,4 @@ void UI::GraphicPawn::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     setCursor(Qt::OpenHandCursor);
     QPointF new_pos = this->scenePos();
     emit pawnIsMoved(this->pawnPtr_->getId(), old_pos, new_pos);
-    std::cerr << "old pos: " << old_pos.rx() << ", " << old_pos.ry() << "\n";
-    std::cerr << "new pos: " << new_pos.rx() << ", " << new_pos.ry() << "\n";
 }

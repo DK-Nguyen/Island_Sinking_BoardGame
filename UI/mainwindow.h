@@ -14,7 +14,7 @@
 #include <configurationwindow.h>
 #include <igamerunner.hh>
 
-const double BOARD_SCALE = 1.2;
+const double BOARD_SCALE = 1.0;
 const int HEXBOARD_WIDTH = 720;
 const int HEXBOARD_HEIGHT = 720;
 const int CONTROLBOARD_WIDTH = 350;
@@ -38,13 +38,23 @@ public:
 
 
 signals:
+    // signal sent to controlBoard to change points
     void pointChange(std::vector<int>);
 
 public slots:
+    // handle game quitting
     void quitGame();
+
+    // initialize the game
     void initializeGame(UI::Configuration cconfig_);
+
+    // update the point and send signal to controlBoard
     void updatePoint(std::vector<int> IDs, std::vector<int> increment);
+
+    // handle game over case
     void gameOver(std::string winner);
+
+    // handle play again functionality
     void playAgain();
 
 private:
@@ -61,8 +71,13 @@ private:
     UI::Configuration config_;
     std::vector<Common::CubeCoordinate> mountainTiles_;
 
+    // create hexBoard and controlBoard and display game elements
     void constructWindow();
+
+    // read top10 players from setting file
     void loadTop10();
+
+    // save top10 players to setting file
     void saveTop10();
     void clear();
 

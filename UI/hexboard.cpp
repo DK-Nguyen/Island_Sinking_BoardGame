@@ -46,6 +46,7 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> gameEnginePtr,
     this->currentActorId_ = 100;
     this->currentTransportId_ = 500;
 
+    // 8 distinct colors for maximum 8 players
     QVector<QColor> playerColors;
     playerColors.push_back(Qt::red);
     playerColors.push_back(Qt::blue);
@@ -54,6 +55,7 @@ HexBoard::HexBoard(std::shared_ptr<Common::IGameRunner> gameEnginePtr,
     playerColors.push_back(QColor(165, 42, 42));
     playerColors.push_back(QColor(245, 130, 48));
     playerColors.push_back(QColor(255, 250, 200));
+    playerColors.push_back(QColor(170, 255, 195));
 
     int playerCount = 0;
     for (auto player : gamePlayers)
@@ -107,20 +109,18 @@ void HexBoard::hexClicked(int id)
 /***
 LOGIC
 -----
+Description: This slot is called when graphic hex is clicked
 
 if not during stage 2: ignore
 if stage 2:
-    - if can flip:
-        - change color of graphic hex
-        - create new graphic actor/transport and add to backend, graphic
-        - if vortex:
-            - do_vortex_action
-        - change stage to 3, update controlboard
-        - enable wheel click
-
-TODO
-----
-- verify logic versus implementation
+- if can flip:
+    - change color of graphic hex
+    - create new graphic actor/transport and add to backend, graphic
+    - if vortex: do vortex action
+    - change stage to 3
+    - update controlboard
+    - enable wheel click
+    - update existing players (in case vortex performs action)
 
 ***/
 {
@@ -224,15 +224,9 @@ set wheel_output_
 if wheel output indicates dolphin:
     - enable movement of all dolphins
     - enable pawn movement on the same hexes
-
 if wheel output is actor:
     - enable actor movement
-
 if no actor or transport exists yet, change to stage 1
-
-TODO
-----
-- verify logic versus implementation
 
 ***/
 {
@@ -302,6 +296,7 @@ void HexBoard::pawnIsMoved(int pawnId, QPointF oldPos, QPointF newPos)
 /***
 LOGIC
 -----
+Description: slot handles when graphic pawn is moved
 
 if pawn is moved within same hex
     - if pawn is moved onto transport
@@ -315,7 +310,7 @@ if pawn is moved within same hex
 
 if pawn is moved to new hex:
     - if stage 3:
-        - move back pawn to old position (stage 3 only allows moving pawn to dolphin)
+        - move back pawn to old position (stage 3 only allows moving pawn to dolphin on same hex)
     - if stage 1:
         - if pawn movement is not valid:
             - move back pawn to old position
@@ -326,40 +321,27 @@ if pawn is moved to new hex:
                 - if transport in new hex is not full
                     - add graphic pawn to graphic transport
                     - move pawn in backend
-                    - update move left in backend, controlboard
+                    - update controlBoard
                     - if no move left:
                         - if island is sunk:
                             - set to stage 3
-                            - enable wheel click
                         - if island is not sunk:
                             - set to stage 2
-                        - disable pawn movement
-                        - clear current_player_pawn_list
-                        - update stage in controlboard
 
             - if pawn is not moved to transport in new hex
                 - move pawn in backend
-                - update move left in backend, controlboard
+                - update controlBoard
                 - if no move left:
                     - if island is sunk:
                         - set to stage 3
-                        - enable wheel click
                     - if island is not sunk:
                         - set to stage 2
-                        - enable hex click
-                    - disable pawn movement
-                    - clear current_player_pawn_list
-                    - update stage in controlboard
 
             - if pawn was on transport in old hex and pawn is moved to new hex
                 - remove graphic pawn from graphic transport
                 - remove pawn from transport
 
-
-
- TODO:
- - check actual implementation versus logic description
-
+            - handle moving graphic pawns on dataMap
  * ***/
 {
     // get pawn 2D position
@@ -542,25 +524,15 @@ void HexBoard::actorIsMoved(int actorId, QPointF oldPos, QPointF newPos)
 LOGIC
 -----
 
-Description: actor is moved only during 3rd stage, movement validity is checked using game engine
+Description: slot that handles movement of graphic actor
 
 if move is not valid:
     - put back graphic actor to old position
 
 if move is valid:
     - move actor in backend
-    - check type of actor and perform corresponding actions (e.g., do_shark_action(),...)
-    - do action function should handles both graphic and backend
+    - check type of actor and perform corresponding actions (e.g., doSharkAction(),...)
     - change game stage to 1
-    - change to next player
-    - update current_player_pawn_list
-    - update info on controlboard
-    - enable pawn movement
-
-TODO
-----
-- write implementation
-- verify logic versus implementation
 
 ***/
 {
@@ -640,37 +612,28 @@ LOGIC
 Description: perform transport movement and check if target position and surrounding hexes has actors that can
 destroy the transport or pawns on transport.
 
-NOTE: version 3.3.0 specifies transport carrying pawn with dive option
-
-
 stage 1: both dolphin and boat can move
 stage 3: only dolphin can move
 
 - if move is not valid:
     - return transport to old position
 - if move is valid:
-    - should return #move left
     - move in backend usign game engine
     - move graphic pawns on transport with direction new_pos - old_pos
-    - call update to move left on controlboard
+    - update controlBoard
 
 - if boat:
     - if new hex has seamunster:
-        - call do_seamunster_action()
+        - call doSeamunsterAction()
     - if new hex has kraken:
-        - call do_kraken_action()
+        - call doKrakenAction()
 
 - if stage 1:
     - if no move left:
         change to stage 2
 
 - if stage 3:
-    change to stage 3
-
-TODO
-----
-- implement when new features from course side come
-- verify implementation versus logic
+    change to stage 1
 
 ***/
 
@@ -809,7 +772,7 @@ TODO
 }
 
 void HexBoard::addPawn(int pawnId, std::shared_ptr<Common::Pawn> pawnPtr)
-// add graphic pawn
+// add graphic pawn to hexBoard
 {
     auto hexCoord = pawnPtr->getCoordinates();
     auto pawnPos = generatePawnPosition(hexCoord);
@@ -843,7 +806,7 @@ void HexBoard::addPawn(int pawnId, std::shared_ptr<Common::Pawn> pawnPtr)
 }
 
 void HexBoard::addActor(int actor_id, std::shared_ptr<Common::Actor> actorPtr)
-// add graphic actor
+// add graphic actor to hexBoard
 {
     auto hexCoord = actorPtr->getHex()->getCoordinates();
     auto actorPos = cubeToHexPos(hexCoord);
@@ -1215,17 +1178,6 @@ void HexBoard::doVortexAction(int id)
 void HexBoard::doKrakenAction(int id)
 /***
 description: destroy boat on current hex, pawns are put on the sea again
-
-LOGIC
------
-- call doAction() on backend
-- if current hex has boat
-    - destroy graphical boat
-
-TODO
-----
-- verify implementation versus logic
-
 ***/
 {
 
@@ -1239,17 +1191,8 @@ TODO
 
 void HexBoard::doSharkAction(int id)
 /***
-description: shark eats pawns on the hex
+description: shark eats pawns and dolphin on hex
 
-LOGIC
------
-
-- remove graphical and backend pawns and dolphin
-
-
-TODO
-----
-- verify implementation versus logic
  ***/
 {
     auto shark = graphicActorList_[id];
@@ -1261,18 +1204,7 @@ TODO
 
 void HexBoard::doSeamunsterAction(int id)
 /***
-description: shark eats pawns and boat on the hex
-
-LOGIC
------
-
-- remove graphical pawn and boat
-- call doAction()
-
-
-TODO
-----
-- verify implementation versus logic
+description: seamunster destroys boat and pawns
  ***/
 {
     auto seamunster = graphicActorList_[id];
@@ -1433,6 +1365,7 @@ HexData HexBoard::removeData(std::string key, bool pawn, std::string transportTy
 }
 
 void HexBoard::enablePawnMovement()
+// enable movement of pawns in currentPlayerPawnList_
 {
     // activate pawns of current player
     for (auto pawnIt=graphicPawnList_.begin(); pawnIt!=graphicPawnList_.end(); pawnIt++)
@@ -1447,6 +1380,7 @@ void HexBoard::enablePawnMovement()
 }
 
 void HexBoard::enableTransportMovement()
+// enable movement of transports in movableTransports_
 {
     for (auto transportIt : graphicTransportList_)
     {
@@ -1464,12 +1398,14 @@ void HexBoard::enableTransportMovement()
 
 
 void HexBoard::disablePawnMovement()
+// disbale movement of pawns in currentPlayerPawnList_
 {
     emit(setPawnMovement(false, currentPlayerPawnList_));
     currentPlayerPawnList_.clear();
 }
 
 void HexBoard::disableTransportMovement()
+// disable movement of transport in movableTransports_
 {
     for (auto id : movableTransports_)
     {
@@ -1479,6 +1415,7 @@ void HexBoard::disableTransportMovement()
 }
 
 void HexBoard::changeStage(int stage)
+// change to corresponding stage and enable/disable corresponding items
 {
     if (stage == 1)
     {
@@ -1623,6 +1560,7 @@ if exist transport in target hex, movement is not allowed
 }
 
 void HexBoard::moveGraphicPawn(int pawnId, Common::CubeCoordinate oldPos, Common::CubeCoordinate newPos)
+// remove graphic pawn in old dataMap position and move to new dataMap position
 {
     auto oldData = dataMap_[cubeToString(oldPos)];
     auto newData = dataMap_[cubeToString(newPos)];
@@ -1646,6 +1584,7 @@ void HexBoard::moveGraphicPawn(int pawnId, Common::CubeCoordinate oldPos, Common
 }
 
 void HexBoard::moveGraphicTransport(int transportId, Common::CubeCoordinate oldPos, Common::CubeCoordinate newPos)
+// remove graphic transport in old dataMap position and move to new position
 {
     int index = 0;
     for (auto it : dataMap_[cubeToString(oldPos)].transports)
@@ -1664,6 +1603,7 @@ void HexBoard::moveGraphicTransport(int transportId, Common::CubeCoordinate oldP
 }
 
 void HexBoard::moveGraphicActor(int actorId, Common::CubeCoordinate oldPos, Common::CubeCoordinate newPos)
+// remove graphic actor from old position in dataMap and move to new position
 {
     auto oldData = dataMap_[cubeToString(oldPos)];
     auto newData = dataMap_[cubeToString(newPos)];
@@ -1691,12 +1631,13 @@ void HexBoard::moveGraphicActor(int actorId, Common::CubeCoordinate oldPos, Comm
 }
 
 void HexBoard::wheelEvent(QWheelEvent *event)
+// handle wheel scrolling
 {
     int numDegrees = event->delta() / 8;
     int numSteps = numDegrees / 15;
-    wheel_schedule += numSteps;
-    if (wheel_schedule * numSteps < 0)
-    wheel_schedule = numSteps;
+    wheelSchedule_ += numSteps;
+    if (wheelSchedule_ * numSteps < 0)
+    wheelSchedule_ = numSteps;
 
     QTimeLine *anim = new QTimeLine(350, this);
     anim->setUpdateInterval(20);
@@ -1708,16 +1649,16 @@ void HexBoard::wheelEvent(QWheelEvent *event)
 
 void HexBoard::scalingTime(qreal x)
 {
-    qreal factor = 1.0+ qreal(wheel_schedule) / 300.0;
+    qreal factor = 1.0+ qreal(wheelSchedule_) / 300.0;
     this->scale(factor, factor);
 }
 
 void HexBoard::animFinished()
 {
-    if (wheel_schedule > 0)
-    wheel_schedule--;
+    if (wheelSchedule_ > 0)
+    wheelSchedule_--;
     else
-    wheel_schedule++;
+    wheelSchedule_++;
     sender()->~QObject();
 }
 }

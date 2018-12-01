@@ -166,6 +166,11 @@ void MainWindow::loadTop10()
     {
         top10_->push_back(std::make_pair(it.key().toStdString(),it.value().toInt()));
     }
+
+    auto compareOperator = Compare();
+
+    std::sort(top10_->begin(), top10_->end(), compareOperator);
+
 }
 
 void MainWindow::saveTop10()

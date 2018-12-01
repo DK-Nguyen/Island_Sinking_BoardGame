@@ -24,9 +24,12 @@ public:
     ~ConfigurationWindow();
 
 signals:
+    // emit signal containing configuration info to mainWindow
     void gameStart(UI::Configuration config);
 
 private slots:
+
+    // handle play button mouse click
     void playClicked();
 
 private:

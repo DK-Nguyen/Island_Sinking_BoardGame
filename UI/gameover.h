@@ -18,11 +18,17 @@ public:
     QPushButton *playAgainButton_, *quitButton_;
 
 signals:
+    // emit signal to play again in mainWindow
     void playAgain();
+
+    // emit signal to quit in mainWindow
     void quit();
 
 private slots:
+    // handle play_again button
     void playAgainClicked();
+
+    // handle quit button
     void quitClicked();
 };
 }

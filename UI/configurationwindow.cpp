@@ -81,6 +81,14 @@ void ConfigurationWindow::playClicked()
         return;
     }
 
+    if (players_.size() > 8)
+    {
+        QMessageBox mes;
+        mes.setText("Maximum 8 players allowed");
+        mes.exec();
+        return;
+    }
+
     QStringList players = QStringList();
 
     for (auto name : players_){

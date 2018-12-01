@@ -48,7 +48,7 @@ ControlBoard::ControlBoard(std::shared_ptr<Common::IGameRunner> game_engine,
     currentTurn_->setScale(1.1*boardScale_);
     currentTurn_->setTextWidth(-1);
 
-    stage_ = new QGraphicsTextItem(tr("stage: ") + gameState_->currentGamePhaseName());
+    stage_ = new QGraphicsTextItem(tr("Stage: ") + gameState_->currentGamePhaseName());
     stage_->adjustSize();
     stage_->setPos(STAGE_POS*boardScale_);
     scene_->addItem(stage_);
@@ -146,7 +146,7 @@ void ControlBoard::updateCurrentTurn()
 }
 void ControlBoard::updateStage()
 {
-    stage_->setPlainText(tr("stage_: ") + gameState_->currentGamePhaseName());
+    stage_->setPlainText(tr("Stage: ") + gameState_->currentGamePhaseName());
     update();
     return;
 }

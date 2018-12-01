@@ -18,8 +18,6 @@
 
 const double ACTOR_SCALE = 0.02;
 
-
-
 struct HexData{
     Common::CubeCoordinate coord;
     std::list<UI::GraphicActor*> actors;
@@ -41,15 +39,6 @@ public:
              int height,
              int boardScale,
              QWidget* parent=nullptr);
-
-    // container to hold items
-    QGraphicsScene* scene_;
-
-    std::shared_ptr<Common::IGameRunner> gameEngine_;
-    std::shared_ptr<Student::GameBoard> gameBoard_;
-    std::shared_ptr<Student::GameState> gameState_;
-    std::vector<std::shared_ptr<Common::IPlayer>> players;
-    int boardScale_, width, height;
 
     void clear();
 
@@ -89,10 +78,28 @@ private slots:
 
 
 private:
+    // container to hold items
+    QGraphicsScene* scene_;
+
+    // ptr to game engine
+    std::shared_ptr<Common::IGameRunner> gameEngine_;
+
+    // ptr to game board
+    std::shared_ptr<Student::GameBoard> gameBoard_;
+
+    // ptr to game state
+    std::shared_ptr<Student::GameState> gameState_;
+
+    // vector of players
+    std::vector<std::shared_ptr<Common::IPlayer>> players;
+    int boardScale_, width, height;
+
+    // scrollbar elements
     QScrollBar *hScrollbar_, *vScrollbar_;
 
+    // handle wheel scrolling
     void wheelEvent(QWheelEvent * event);
-    int wheel_schedule=10;
+    int wheelSchedule_ = 10;
 
     // hash table to query GraphicHex based on ID -> key: graphic_hex_id, value: GraphicHex*
     QHash<int, UI::GraphicHex*> graphicHexList;
@@ -209,19 +216,22 @@ private:
     // disable transport movement
     void disableTransportMovement();
 
+    // change game stage
     void changeStage(int stage);
 
+    // check additional constraint on actor movement
     bool checkActorMovement(Common::CubeCoordinate newPos, int id);
 
+    // check additional constraint on transport movement
     bool checkTransportMovement(Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos, int id);
 
-    // move graphic pawns on data_map
+    // move graphic pawns on dataMap_
     void moveGraphicPawn(int pawnId, Common::CubeCoordinate oldPos, Common::CubeCoordinate newPos);
 
-    // move graphic transports on data_map
+    // move graphic transports on dataMap_
     void moveGraphicTransport(int transport_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos);
 
-    // move graphic actor on data_map
+    // move graphic actor on dataMap_
     void moveGraphicActor(int actor_id, Common::CubeCoordinate old_pos, Common::CubeCoordinate new_pos);
 
 };

@@ -10,15 +10,16 @@ namespace UI{
 class GraphicActor: public QObject, public QGraphicsPixmapItem{
     Q_OBJECT
 public:
-
+    // initialize with Common::Actor
     GraphicActor(std::shared_ptr<Common::Actor> actorPtr, QGraphicsItem* parent=nullptr);
 
     QGraphicsItem* parent;
 
+    // get Common::Actor ptr
     std::shared_ptr<Common::Actor> getActor();
 
 signals:
-    // notify HexBoard of actor movement-> HexBoard need to reset to old position if move is not valid
+    // signal sent to hexBoard
     void actorIsMoved(int actor_id, QPointF old_pos, QPointF new_pos);
 
 public slots:

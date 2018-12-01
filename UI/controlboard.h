@@ -59,16 +59,16 @@ signals:
 
 public slots:
     // slot to update current turn
-    void updateCurrentTurn(); // allow parent to update current turn
+    void updateCurrentTurn();
 
     // slot to update curent game stage
-    void updateStage(); // allow parent to update current stage
+    void updateStage();
 
     // slot to update number of move left
-    void updateMovementLeft(); // allow parent to update movement left
+    void updateMovementLeft();
 
     // slot to update points
-    void updatePoint(std::vector<int> player_IDs); // allow parent to update points
+    void updatePoint(std::vector<int> player_IDs);
 
     // slot to update top10
     void updateTop10();
@@ -89,7 +89,7 @@ private:
     std::shared_ptr<Student::GameState> gameState_;
     double boardScale_;
 
-    // data structure that keeps items
+    // data structure that keeps graphic items
     QGraphicsScene* scene_;
 
     bool allowQuitting_ = false;
@@ -110,10 +110,16 @@ private:
     UI::Wheel *innerWheel_, *outterWheel_;
     QGraphicsPolygonItem* marker_;
 
-
+    // show points of players
     void initializePoints();
+
+    // show top10 list
     void initializeTop10();
+
+    // show inner wheel
     void initializeInnerWheel();
+
+    // show outter wheel
     void initializeOutterWheel();
 };
 }

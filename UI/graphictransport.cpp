@@ -91,8 +91,6 @@ QList<UI::GraphicPawn*> UI::GraphicTransport::getPawnList()
 
 bool UI::GraphicTransport::isFull()
 {
-    std::cerr << "number of pawns on graphic transport: " << pawnList_.size() << "\n";
-    std::cerr << "number of pawns on backend transport: " << transportPtr_->getPawnsInTransport().size() << "\n";
 
     if (transportPtr_->getTransportType().compare("boat")==0 && pawnList_.size()<3)
     {

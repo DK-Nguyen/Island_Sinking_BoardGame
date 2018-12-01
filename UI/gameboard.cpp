@@ -196,7 +196,7 @@ void Student::GameBoard::moveTransport(int id, Common::CubeCoordinate transport_
 
     (*transport_list)[id].second = new_hex_ptr;
 
-    // move pawns on transport
+//    // move pawns on transport
     for (auto pawn : transport_data.first->getPawnsInTransport())
     {
         movePawn(pawn->getId(), transport_coord);

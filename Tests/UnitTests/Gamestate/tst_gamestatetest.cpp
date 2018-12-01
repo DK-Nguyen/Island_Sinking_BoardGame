@@ -34,29 +34,29 @@ gamestatetest::~gamestatetest()
 void gamestatetest::testInit()
 {
     std::vector<std::shared_ptr<Common::IPlayer>> players;
-    std::shared_ptr<std::unordered_map<int, std::string>> player_names = std::make_shared<std::unordered_map<int, std::string>>();
+    std::shared_ptr<std::unordered_map<int, std::string>> playerNames = std::make_shared<std::unordered_map<int, std::string>>();
     std::shared_ptr<std::unordered_map<std::string, int>> points = std::make_shared<std::unordered_map<std::string, int>>();
     std::shared_ptr<std::vector<std::pair<std::string, int>>> top10 =  std::make_shared<std::vector<std::pair<std::string, int>>>();
 
     // add the first player with id=0 and name "dat", 0 point
-    std::shared_ptr<Player> player_ptr = std::make_shared<Player>(0);
+    auto player_ptr = std::make_shared<Student::Player>(0);
     players.push_back(player_ptr);
-    player_names->insert(std::make_pair(0, "dat"));
+    playerNames->insert(std::make_pair(0, "dat"));
     points->insert(std::make_pair("dat", 0));
     // add the second player with id=1 and name "khoa", 0 point
-    std::shared_ptr<Player> player_ptr2 = std::make_shared<Player>(1);
+    auto player_ptr2 = std::make_shared<Student::Player>(1);
     players.push_back(player_ptr2);
-    player_names->insert(std::make_pair(1, "khoa"));
+    playerNames->insert(std::make_pair(1, "khoa"));
     points->insert(std::make_pair("khoa", 0));
 
-    std::shared_ptr<GameState> game_state = std::make_shared<GameState>
-            (Common::GamePhase(1), 1, players, player_names, points, top10);
+    auto gameState = std::make_shared<Student::GameState>
+            (Common::GamePhase(1), 1, players, playerNames, points, top10);
 
-    QCOMPARE(game_state->currentGamePhase(), Common::GamePhase(1));
-    QCOMPARE(game_state->currentPlayer(), 1);
-    QCOMPARE(game_state->currentPlayerName(), player_names->at(1));
-    QCOMPARE(game_state->get_player_name(1), player_names->at(1));
-    QCOMPARE(game_state->currentGamePhaseName(), QString("movement"));
+    QCOMPARE(gameState->currentGamePhase(), Common::GamePhase(1));
+    QCOMPARE(gameState->currentPlayer(), 1);
+    QCOMPARE(gameState->currentPlayerName(), playerNames->at(1));
+    QCOMPARE(gameState->getPlayerName(1), playerNames->at(1));
+    QCOMPARE(gameState->currentGamePhaseName(), QString("movement"));
 }
 
 void gamestatetest::testChangeGamePhase()
@@ -65,22 +65,22 @@ void gamestatetest::testChangeGamePhase()
     auto player_names = std::make_shared<std::unordered_map<int, std::string>>();
     auto points = std::make_shared<std::unordered_map<std::string, int>>();
     auto top10 =  std::make_shared<std::vector<std::pair<std::string, int>>>();
-    auto game_state = std::make_shared<GameState>(Common::GamePhase(1), 1, players, player_names, points, top10);
+    auto gameState = std::make_shared<Student::GameState>(Common::GamePhase(1), 1, players, player_names, points, top10);
 
-    game_state->changeGamePhase(Common::GamePhase(2));
-    QCOMPARE(game_state->currentGamePhaseName(), QString("sinking"));
+    gameState->changeGamePhase(Common::GamePhase(2));
+    QCOMPARE(gameState->currentGamePhaseName(), QString("sinking"));
 }
 
 void gamestatetest::testChangePlayerTurn()
 {
     std::vector<std::shared_ptr<Common::IPlayer>> players;
-    auto player_names = std::make_shared<std::unordered_map<int, std::string>>();
+    auto playerNames = std::make_shared<std::unordered_map<int, std::string>>();
     auto points = std::make_shared<std::unordered_map<std::string, int>>();
     auto top10 =  std::make_shared<std::vector<std::pair<std::string, int>>>();
-    auto game_state = std::make_shared<GameState>(Common::GamePhase(1), 1, players, player_names, points, top10);
+    auto gameState = std::make_shared<Student::GameState>(Common::GamePhase(1), 1, players, playerNames, points, top10);
 
-    game_state->changePlayerTurn(2);
-    QCOMPARE(game_state->currentPlayer(), 2);
+    gameState->changePlayerTurn(2);
+    QCOMPARE(gameState->currentPlayer(), 2);
 }
 
 void gamestatetest::testgetActionsLeft()
@@ -91,25 +91,25 @@ void gamestatetest::testgetActionsLeft()
     auto top10 =  std::make_shared<std::vector<std::pair<std::string, int>>>();
 
     // add the first player with id=0 and name "dat", 0 point
-    std::shared_ptr<Player> player_ptr = std::make_shared<Player>(0);
-    players.push_back(player_ptr);
+    std::shared_ptr<Student::Player> playerPtr = std::make_shared<Student::Player>(0);
+    players.push_back(playerPtr);
     player_names->insert(std::make_pair(0, "dat"));
     points->insert(std::make_pair("dat", 0));
-    player_ptr->setActionsLeft(3);
+    playerPtr->setActionsLeft(3);
     // add the second player with id=1 and name "khoa", 0 point
-    std::shared_ptr<Player> player_ptr2 = std::make_shared<Player>(1);
-    players.push_back(player_ptr2);
+    std::shared_ptr<Student::Player> playerPtr2 = std::make_shared<Student::Player>(1);
+    players.push_back(playerPtr2);
     player_names->insert(std::make_pair(1, "khoa"));
     points->insert(std::make_pair("khoa", 0));
-    player_ptr2->setActionsLeft(2);
+    playerPtr2->setActionsLeft(2);
 
-    auto game_state = std::make_shared<GameState>
+    auto gameState = std::make_shared<Student::GameState>
             (Common::GamePhase(1), 0, players, player_names, points, top10);
 
-    QCOMPARE(game_state->getActionsLeft(), 3u);
+    QCOMPARE(gameState->getActionsLeft(), 3u);
 
-    game_state->changePlayerTurn(1);
-    QCOMPARE(game_state->getActionsLeft(), 2u);
+    gameState->changePlayerTurn(1);
+    QCOMPARE(gameState->getActionsLeft(), 2u);
 }
 
 

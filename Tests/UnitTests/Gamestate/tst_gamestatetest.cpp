@@ -7,6 +7,7 @@
 #include <memory>
 #include "player.hh"
 #include "string"
+#include <unordered_map>
 
 class gamestatetest : public QObject
 {

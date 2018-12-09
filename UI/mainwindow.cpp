@@ -83,27 +83,6 @@ void MainWindow::updatePoint(std::vector<int> IDs, std::vector<int> increment)
     return;
 }
 
-void MainWindow::gameOver(std::string winner)
-{
-    saveTop10();
-    auto gameOverWindow = new UI::GameOverWindow(winner);
-    connect(gameOverWindow, SIGNAL(quit()), this, SLOT(quitGame()));
-    connect(gameOverWindow, SIGNAL(playAgain()), this, SLOT(playAgain()));
-    hexBoard_->clear();
-    hexBoard_->close();
-    controlBoard_->clear();
-    controlBoard_->close();
-    gameOverWindow->show();
-}
-
-void MainWindow::playAgain()
-// clear old data and create new data again
-{
-    clear();
-    top10_->clear();
-    loadTop10();
-    initializeGame(config_);
-}
 
 void MainWindow::constructWindow()
 {
@@ -200,12 +179,36 @@ void MainWindow::saveTop10()
     settings.setValue("top10", top10Tmp);
 }
 
+
+void MainWindow::gameOver(std::string winner)
+{
+    saveTop10();
+    auto gameOverWindow = new UI::GameOverWindow(winner);
+    connect(gameOverWindow, SIGNAL(quit()), this, SLOT(quitGame()));
+    connect(gameOverWindow, SIGNAL(playAgain()), this, SLOT(playAgain()));
+    hexBoard_->clear();
+    hexBoard_->close();
+    controlBoard_->clear();
+    controlBoard_->close();
+    gameOverWindow->show();
+}
+
+
 void MainWindow::clear()
 {
     players_.clear();
     pawnList_.clear();
 }
 
+
+void MainWindow::playAgain()
+// clear old data and create new data again
+{
+    clear();
+    top10_->clear();
+    loadTop10();
+    initializeGame(config_);
+}
 
 void MainWindow::quitGame()
 // TODO: clear data from both controlboard and hexboard and backend data
